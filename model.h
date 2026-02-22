@@ -30,7 +30,6 @@ struct Process {
 struct SchedulingQueue {
     std::string qID;    //queue ID
     std::string policy; //select: rr - sjf - srtn
-    int priorityQueueLevel;
     int timeSlice;      //rr
 
     std::vector<Process*> readyList;
@@ -40,7 +39,8 @@ struct SchedulingQueue {
         return readyList.empty();
     }
 
-    SchedulingQueue(std::string id, std::string pol, int pql, int qantum = 0) : qID(id), policy(pol), priorityQueueLevel(pql), timeSlice(qantum) {}
+    SchedulingQueue(std::string id, std::string pol, int qantum = 0) : qID(id), policy(pol), timeSlice(qantum) {}
+
 };
 
 #endif
