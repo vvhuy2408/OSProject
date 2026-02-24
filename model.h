@@ -11,7 +11,7 @@ struct Process {
     int burstTime;
     int remainingTime;
     int priority;
-    std::string curQueueID;
+    int curQueueID;
     
     int startTime = -1;     //avoiding confusion with arrivalTime
                             //if startTime =-1, process has not started
@@ -24,6 +24,22 @@ struct Process {
     //COMPLETED FLAG CHECK
     bool completed = false;
 
+    //HELPER PARSE QUEUE
+    static int parseQueueID(const std::string& q) {
+        if (q.empty()) return 0;
+
+        char prefix = (char)toupper(q[0]);
+        if (prefix != 'Q') return 0;
+
+        if (q.size() == 1) return 0;
+
+
+        for (size_t i = 1; i < q.size(); i++) {
+            if (!std::isdigit(q[i])) return 0;
+        }
+
+        return std::stoi(q.substr(1));
+    }
     //AGING - từ từ cập nhật nếu mún :>
 };
 
