@@ -43,7 +43,7 @@ void Parser::readFile(std::string file, std::vector<SchedulingQueue>& qList, std
         //vd: P1  0  12  Q1
         if (ss >> processN.pID >> processN.arrivalTime >> processN.burstTime >> whichQ) {
             processN.remainingTime = processN.burstTime;
-            processN.curQueueID = whichQ;
+            processN.curQueueID = Process::parseQueueID(whichQ);
             processN.startTime = -1;
             processN.completed = false;
             pList.push_back(processN);
@@ -54,16 +54,16 @@ void Parser::readFile(std::string file, std::vector<SchedulingQueue>& qList, std
 
     std::cout << "File read successfully!" << std::endl;
 
-    /*
-    //OUTPUT CHECK - để kiểm tra thôi, nào xong hết nhớ xóa
-    std::cout << "Number of queues: " << numQ << std::endl;
-    std::cout << "Queues:" << std::endl;
-    for (const auto& q : qList) {
-        std::cout << "qID: " << q.qID << " | q = " << q.timeSlice << " | policy: " << q.policy << std::endl;
-    }   
-    std::cout << "Processes:" << std::endl;
-    for (const auto& p : pList) {
-        std::cout << "pID: " << p.pID << " | aT: " << p.arrivalTime << " | bT: " << p.burstTime << " | which: " << p.curQueueID << std::endl;
-    }
-    */
+
+    // //OUTPUT CHECK - để kiểm tra thôi, nào xong hết nhớ xóa
+    // std::cout << "Number of queues: " << numQ << std::endl;
+    // std::cout << "Queues:" << std::endl;
+    // for (const auto& q : qList) {
+    //     std::cout << "qID: " << q.qID << " | q = " << q.timeSlice << " | policy: " << q.policy << std::endl;
+    // }   
+    // std::cout << "Processes:" << std::endl;
+    // for (const auto& p : pList) {
+    //     std::cout << "pID: " << p.pID << " | aT: " << p.arrivalTime << " | bT: " << p.burstTime << " | which: " << p.curQueueID << std::endl;
+    // }
+    
 }
