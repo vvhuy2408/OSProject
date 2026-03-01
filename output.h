@@ -9,8 +9,9 @@
 
 class Output {
 public:
-    void printGanttChart();
-    void printReport(const std::vector<Process>& proc);
+    void printReportTerminal(const std::vector<Process>& proc);
+    void printGanttChartTerminal(const std::vector<Segment>& timeline);
+
 };
 
 #endif

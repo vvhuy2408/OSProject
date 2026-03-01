@@ -19,9 +19,11 @@ int main() {
     scheduler.execute();
 
     auto proc = scheduler.getProcesses();
+    auto tline = scheduler.getTimeline();
     Output output;
-    output.printReport(proc);
-
+    output.printGanttChartTerminal(tline);
+    output.printReportTerminal(proc);
+    
     // auto timeline = scheduler.getTimeline();
     // auto procs = scheduler.getProcesses();
 
