@@ -23,7 +23,12 @@ int main() {
     Output output;
     output.printGanttChartTerminal(tline);
     output.printReportTerminal(proc);
-    
+
+    std::ofstream f("output.txt");
+    output.printGanttChartToFile(f, tline);
+    output.printReportToFile(f, proc);
+
+
     // auto timeline = scheduler.getTimeline();
     // auto procs = scheduler.getProcesses();
 
