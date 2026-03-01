@@ -3,7 +3,7 @@
 void Output::printReportTerminal(const std::vector<Process>& proc) {
     double sumTT = 0;
     double sumWT = 0;
-    int n = proc.size();
+    size_t n = proc.size();
 
     std::cout << std::string(21, '=') << " Process Statistics " << std::string(21, '=') << std::endl;
 
@@ -36,8 +36,8 @@ void Output::printReportTerminal(const std::vector<Process>& proc) {
     std::cout << std::string(62, '-') << std::endl;
 
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "Average Turnaround Time: " << (sumTT / n) << std::endl;
-    std::cout << "Average Waiting Time:    " << (sumWT / n) << std::endl;
+    std::cout << "Average Turnaround Time: " << (sumTT / (double)n) << std::endl;
+    std::cout << "Average Waiting Time:    " << (sumWT / (double)n) << std::endl;
 
     std::cout << std::string(62, '=') << std::endl;
 }
@@ -46,7 +46,7 @@ void Output::printReportToFile(std::ofstream& outFile, const std::vector<Process
     if (!outFile.is_open()) return;
     double sumTT = 0;
     double sumWT = 0;
-    int n = proc.size();
+    size_t n = proc.size();
 
     outFile << std::string(21, '=') << " Process Statistics " << std::string(21, '=') << std::endl;
 
@@ -79,8 +79,8 @@ void Output::printReportToFile(std::ofstream& outFile, const std::vector<Process
     outFile << std::string(62, '-') << std::endl;
 
     outFile << std::fixed << std::setprecision(2);
-    outFile << "Average Turnaround Time: " << (sumTT / n) << std::endl;
-    outFile << "Average Waiting Time:    " << (sumWT / n) << std::endl;
+    outFile << "Average Turnaround Time: " << (sumTT / (double)n) << std::endl;
+    outFile << "Average Waiting Time:    " << (sumWT / (double)n) << std::endl;
 
     outFile << std::string(62, '=') << std::endl;
 }
@@ -90,7 +90,7 @@ void Output::printGanttChartTerminal(const std::vector<Segment>& tline) {
 
     std::vector<Segment> merge;
     merge.push_back(tline[0]);
-    for (int i = 1; i < tline.size(); i++) {
+    for (size_t i = 1; i < tline.size(); i++) {
         if (tline[i].pID == merge.back().pID && tline[i].qID == merge.back().qID) {
             merge.back().end = tline[i].end;
         }
@@ -124,7 +124,7 @@ void Output::printGanttChartToFile(std::ofstream& outFile, const std::vector<Seg
 
     std::vector<Segment> merge;
     merge.push_back(tline[0]);
-    for (int i = 1; i < tline.size(); i++) {
+    for (size_t i = 1; i < tline.size(); i++) {
         if (tline[i].pID == merge.back().pID && tline[i].qID == merge.back().qID) {
             merge.back().end = tline[i].end;
         }
