@@ -151,9 +151,5 @@ void Scheduler::execute() {
         quantumCheck();
         time++;
     }
-    for (auto& p : procs) {
-        p.turnaroundTime = p.completionTime - p.arrivalTime;
-        p.waitingTime = p.turnaroundTime - p.burstTime;
-    }
 
 }

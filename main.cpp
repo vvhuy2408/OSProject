@@ -4,18 +4,30 @@
 #include "parser.h"
 #include "scheduler.h"
 #include "model.h"
+#include "output.h"
 
 using namespace std;
 
 int main() {
-    // vector<SchedulingQueue> qList;
-    // vector<Process> pList;
+    vector<SchedulingQueue> qList;
+    vector<Process> pList;
 
-    // Parser parser;
-    // parser.readFile("input0.txt", qList, pList);
+    Parser parser;
+    parser.readFile("input0.txt", qList, pList);
 
-    // Scheduler scheduler(pList, qList);
-    // scheduler.execute();
+    Scheduler scheduler(pList, qList);
+    scheduler.execute();
+
+    auto proc = scheduler.getProcesses();
+    auto tline = scheduler.getTimeline();
+    Output output;
+    output.printGanttChartTerminal(tline);
+    output.printReportTerminal(proc);
+
+    std::ofstream f("output.txt");
+    output.printGanttChartToFile(f, tline);
+    output.printReportToFile(f, proc);
+
 
     // auto timeline = scheduler.getTimeline();
     // auto procs = scheduler.getProcesses();
