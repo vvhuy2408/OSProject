@@ -6,25 +6,25 @@
 #include <queue>
 
 struct Process {
-    std::string pID;    //process ID
+    std::string pID;    // process ID
     int arrivalTime;
     int burstTime;
     int remainingTime;
     int priority;
     int curQueueID;
     
-    int startTime = -1;     //avoiding confusion with arrivalTime
-                            //if startTime =-1, process has not started
+    int startTime = -1;     // avoiding confusion with arrivalTime
+                            // if startTime =-1, process has not started
 
-    //OUTPUT
+    // OUTPUT
     int completionTime = 0;
     int turnaroundTime = 0;
     int waitingTime = 0;
 
-    //COMPLETED FLAG CHECK
+    // COMPLETED FLAG CHECK
     bool completed = false;
 
-    //HELPER PARSE QUEUE
+    // HELPER PARSE QUEUE
     static int parseQueueID(const std::string& q) {
         if (q.empty()) return 0;
 
@@ -40,17 +40,17 @@ struct Process {
 
         return std::stoi(q.substr(1));
     }
-    //AGING - từ từ cập nhật nếu mún :>
+
 };
 
 struct SchedulingQueue {
-    std::string qID;    //queue ID
-    std::string policy; //select: rr - sjf - srtn
-    int timeSlice;      //rr
+    std::string qID;    // queue ID
+    std::string policy; // select: rr - sjf - srtn
+    int timeSlice;      // rr
 
     std::vector<Process*> readyList;
 
-    //EMPTY FLAG CHECK
+    // EMPTY FLAG CHECK
     bool isEmpty() const {
         return readyList.empty();
     }

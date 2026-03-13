@@ -8,43 +8,35 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
+    // need exactly 2 args: input and output file
+    if (argc != 3) {
+        cerr << "Usage: " << argv[0] << " input.txt output.txt" << endl;
+        return 1;
+    }
+
     vector<SchedulingQueue> qList;
     vector<Process> pList;
 
+    // parse input file
     Parser parser;
-    parser.readFile("input0.txt", qList, pList);
+    parser.readFile(argv[1], qList, pList);
 
+    // run the scheduler
     Scheduler scheduler(pList, qList);
     scheduler.execute();
 
+    // print results to terminal
     auto proc = scheduler.getProcesses();
     auto tline = scheduler.getTimeline();
     Output output;
     output.printGanttChartTerminal(tline);
     output.printReportTerminal(proc);
 
-    std::ofstream f("output.txt");
+    // write results to output file
+    std::ofstream f(argv[2]);
     output.printGanttChartToFile(f, tline);
     output.printReportToFile(f, proc);
-
-
-    // auto timeline = scheduler.getTimeline();
-    // auto procs = scheduler.getProcesses();
-
-    // cout << "\n===== CPU SCHEDULING DIAGRAM =====\n";
-    // for (auto& s : timeline) {
-    //     cout << "[" << s.start << " - " << s.end << "] "
-    //          << s.qID << " " << s.pID << "\n";
-    // }
-
-    // cout << "\n===== PROCESS STATS =====\n";
-    // for (auto& p : procs) {
-    //     cout << p.pID
-    //          << " | CT=" << p.completionTime
-    //          << " | TAT=" << p.turnaroundTime
-    //          << " | WT=" << p.waitingTime << "\n";
-    // }
 
     return 0;
 }
