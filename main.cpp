@@ -35,6 +35,11 @@ int main(int argc, char* argv[]) {
 
     // write results to output file
     std::ofstream f(argv[2]);
+    std::ofstream f(argv[2]);
+    if (!f.is_open()) {
+        cerr << "Cannot open output file: " << argv[2] << endl;
+        return 1;
+    }
     output.printGanttChartToFile(f, tline);
     output.printReportToFile(f, proc);
 
