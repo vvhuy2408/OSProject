@@ -174,3 +174,7 @@ int main(int argc, char* argv[]) {
     printf("\n=== DONE ===\n");
     return 0;
 }
+
+// terminal: g++ main.cpp Device/device.cpp Bootsector/boot_sector.cpp -I./ -I./Bootsector -I./Device -o fat32_reader
+// cmd (run as admin): cd <folder chứa main.cpp>
+// cmd (run as admin): fat32_reader.exe \\.\E:   (thay E bằng ổ USB của bạn)
