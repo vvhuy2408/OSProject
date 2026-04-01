@@ -5,7 +5,7 @@
 #include "fat_structs.h"
 #include "device.h"
 #include "boot_sector.h"
-// #include "fat_table.h"
+#include "fat_table.h"
 // #include "directory.h"
 // #include "file_reader.h"
 // #include "scheduler.h"
@@ -167,6 +167,51 @@ int main(int argc, char* argv[]) {
 
     // 3. In thông tin
     printBootSector(boot);
+
+    // 4. Load bang FAT
+    printf("\n=== Load bang FAT ===\n");
+    std::vector<uint32_t> fatTable;
+    if (!loadFATTable(handle, boot, fatTable)) {
+        printf("THAT BAI: Khong load duoc bang FAT.\n");
+        closeDevice(handle);
+        return 1;
+    }
+    printf("OK: Load bang FAT thanh cong.\n");
+    printf("  -> So entry: %zu\n", fatTable.size());
+    printf("  -> Kich thuoc bang FAT: %u bytes\n", boot.fatSize32 * boot.bytesPerSector);
+
+    // 5. Kiem tra cluster chain cua Root Directory
+    // Root Directory bat dau tai rootCluster (thuong la 2)
+    // Theo doi chuoi cluster va dem xem co bao nhieu cluster
+    printf("\n=== Kiem tra cluster chain cua Root Directory ===\n");
+    uint32_t cluster = boot.rootCluster;
+    int chainLength = 0;
+    while (cluster >= 2 && cluster < 0x0FFFFFF8) {
+        printf("  Cluster %u -> ", cluster);
+        uint32_t next = getNextCluster(fatTable, cluster);
+        printf("%u\n", next);
+        cluster = next;
+        chainLength++;
+        if (chainLength > 100) {
+            printf("  ... (dung lai sau 100 buoc, co the bi loop)\n");
+            break;
+        }
+    }
+    printf("OK: Root Directory chiem %d cluster.\n", chainLength);
+
+    // 6. In 16 entry dau cua bang FAT de kiem tra
+    // Entry 0 va 1 la gia tri dac biet, entry 2 tro di moi la cluster du lieu
+    printf("\n=== 16 entry dau cua bang FAT ===\n");
+    int limit = (fatTable.size() < 16) ? (int)fatTable.size() : 16;
+    for (int i = 0; i < limit; i++) {
+        printf("  FAT[%2d] = 0x%08X", i, fatTable[i]);
+        uint32_t val = fatTable[i] & 0x0FFFFFFF;
+        if (i == 0 || i == 1)    printf("  (reserved)");
+        else if (val == 0x0FFFFFFF) printf("  (EOC - cluster cuoi chuoi)");
+        else if (val == 0)          printf("  (cluster trong)");
+        else                        printf("  (next cluster: %u)", val);
+        printf("\n");
+    }
 
     // 4. Đóng thiết bị
     closeDevice(handle);

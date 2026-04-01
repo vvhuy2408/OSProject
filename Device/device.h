@@ -57,26 +57,26 @@ void closeDevice(DeviceHandle handle);
 bool readSector(DeviceHandle handle, uint64_t sectorNum, uint8_t* buffer, uint32_t sectorSize);
 
 
-// // ------------------------------------------------------------
-// // Đọc nhiều sector liên tiếp vào buffer
-// //
-// // Tiện hơn readSector() khi cần đọc toàn bộ một cluster
-// // (một cluster = sectorsPerCluster sector liên tiếp)
-// //
-// // handle:      handle trả về từ openDevice()
-// // startSector: sector đầu tiên cần đọc
-// // count:       số lượng sector cần đọc
-// // buffer:      vùng nhớ nhận dữ liệu, kích thước >= count * sectorSize
-// // sectorSize:  kích thước một sector tính bằng byte
-// //
-// // Trả về: true nếu đọc thành công toàn bộ count sector
-// // ------------------------------------------------------------
-// bool readSectors(DeviceHandle handle, uint64_t startSector, uint32_t count, uint8_t* buffer, uint32_t sectorSize);
+// ------------------------------------------------------------
+// Đọc nhiều sector liên tiếp vào buffer
+//
+// Tiện hơn readSector() khi cần đọc toàn bộ một cluster
+// (một cluster = sectorsPerCluster sector liên tiếp)
+//
+// handle:      handle trả về từ openDevice()
+// startSector: sector đầu tiên cần đọc
+// count:       số lượng sector cần đọc
+// buffer:      vùng nhớ nhận dữ liệu, kích thước >= count * sectorSize
+// sectorSize:  kích thước một sector tính bằng byte
+//
+// Trả về: true nếu đọc thành công toàn bộ count sector
+// ------------------------------------------------------------
+bool readSectors(DeviceHandle handle, uint64_t startSector, uint32_t count, uint8_t* buffer, uint32_t sectorSize);
 
 
-// // ------------------------------------------------------------
-// // Lấy thông điệp lỗi từ lần gọi WinAPI cuối cùng thất bại
-// // Dùng để hiển thị lý do lỗi cho người dùng hoặc debug
-// // Ví dụ: "Access is denied" khi chưa chạy với quyền Admin
-// // ------------------------------------------------------------
+// ------------------------------------------------------------
+// Lấy thông điệp lỗi từ lần gọi WinAPI cuối cùng thất bại
+// Dùng để hiển thị lý do lỗi cho người dùng hoặc debug
+// Ví dụ: "Access is denied" khi chưa chạy với quyền Admin
+// ------------------------------------------------------------
 // std::string getLastErrorMessage();
