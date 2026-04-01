@@ -1,10 +1,10 @@
-// #include <cstdio>
+#include <cstdio>
 // #include <string>
 // #include <vector>
 
-// #include "fat_structs.h"
-// #include "device.h"
-// #include "boot_sector.h"
+#include "fat_structs.h"
+#include "device.h"
+#include "boot_sector.h"
 // #include "fat_table.h"
 // #include "directory.h"
 // #include "file_reader.h"
@@ -138,3 +138,39 @@
 //     // Ví dụ với Qt:   return QApplication(argc, argv) + MainWindow...
 //     // Ví dụ với ImGui: return runImGuiApp(argc, argv);
 // }
+
+int main(int argc, char* argv[]) {
+    const char* devicePath = "\\\\.\\F:";   //check xem cái usb ở ổ nào để thay chữ nha :>
+    if (argc >= 2) {
+        devicePath = argv[1];
+    }
+
+    printf("\n=== TEST BOOT SECTOR ===\n");
+
+    // 1. Mở thiết bị
+    DeviceHandle handle = openDevice(devicePath);
+    if (handle == INVALID_DEVICE_HANDLE) {
+        printf("Failed to open device\n");
+        return 1;
+    }
+    printf("\nOpen device OK\n");
+
+    // 2. Đọc Boot Sector
+    BootSector boot;
+    if (!readBootSector(handle, &boot)) {
+        printf("Failed to read Boot Sector\n");
+        closeDevice(handle);
+        return 1;
+    }
+
+    printf("\nRead Boot Sector OK\n");
+
+    // 3. In thông tin
+    printBootSector(boot);
+
+    // 4. Đóng thiết bị
+    closeDevice(handle);
+
+    printf("\n=== DONE ===\n");
+    return 0;
+}
