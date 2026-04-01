@@ -1,7 +1,8 @@
-// #pragma once
-// #include <stdint.h>
-// #include <string>
-// #include <vector>
+#ifndef FAT_STRUCTS
+# define FAT_STRUCTS
+#include <stdint.h>
+#include <string>
+#include <vector>
 
 // // ============================================================
 // // fat_structs.h
@@ -14,18 +15,21 @@
 // // ------------------------------------------------------------
 // // Thông tin Boot Sector - Dev A parse, Dev B đọc để tính offset
 // // ------------------------------------------------------------
-// struct BootSector {
-//     uint16_t bytesPerSector;       // Số byte mỗi sector (thường là 512)
-//     uint8_t  sectorsPerCluster;    // Số sector mỗi cluster (thường là 8 hoặc 16)
-//     uint16_t reservedSectors;      // Số sector dành riêng (bắt đầu từ sector 0)
-//     uint8_t  numFATs;              // Số bảng FAT (thường là 2)
-//     uint32_t totalSectors32;       // Tổng số sector của toàn bộ phân vùng
-//     uint32_t fatSize32;            // Số sector của một bảng FAT
-//     uint32_t rootCluster;          // Cluster bắt đầu của Root Directory (thường là 2)
-//     uint16_t fsInfoSector;         // Sector chứa FSInfo (thường là 1)
-//     char     oemName[9];           // Tên OEM, null-terminated (8 ký tự + null)
-//     char     volumeLabel[12];      // Nhãn ổ đĩa, null-terminated (11 ký tự + null)
-// };
+struct BootSector {
+    uint16_t bytesPerSector;       // Số byte mỗi sector (thường là 512)
+    uint8_t  sectorsPerCluster;    // Số sector mỗi cluster (thường là 8 hoặc 16)
+    uint16_t reservedSectors;      // Số sector dành riêng (bắt đầu từ sector 0) - Boot sector region
+    uint8_t  numFATs;              // Số bảng FAT (thường là 2)
+
+    uint32_t totalSectors32;       // Tổng số sector của toàn bộ phân vùng
+    
+    uint32_t fatSize32;            // Số sector của một bảng FAT
+    uint32_t rootCluster;          // Cluster bắt đầu của Root Directory (thường là 2)
+    
+    uint16_t fsInfoSector;         // Sector chứa FSInfo (thường là 1)
+    char     oemName[9];           // Tên OEM, null-terminated (8 ký tự + null)
+    char     volumeLabel[12];      // Nhãn ổ đĩa, null-terminated (11 ký tự + null)
+};
 
 
 // // ------------------------------------------------------------
@@ -126,3 +130,5 @@
 // // Giá trị FAT báo hiệu cuối chuỗi cluster
 // #define FAT32_EOC       0x0FFFFFF8 // End of Cluster chain
 // #define FAT32_MASK      0x0FFFFFFF // Mask 4 bit cao khi đọc giá trị FAT
+
+#endif

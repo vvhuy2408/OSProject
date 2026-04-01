@@ -1,6 +1,6 @@
-// #pragma once
-// #include <stdint.h>
-// #include <windows.h>
+#pragma once
+#include <cstdint>
+#include <windows.h>
 
 // // ============================================================
 // // device.h / device.cpp
@@ -16,8 +16,8 @@
 // // Dùng DeviceHandle thay vì HANDLE trực tiếp trong toàn bộ project
 // // để sau này dễ đổi sang Linux mà không phải sửa nhiều chỗ
 // // ------------------------------------------------------------
-// typedef HANDLE DeviceHandle;
-// #define INVALID_DEVICE_HANDLE INVALID_HANDLE_VALUE
+typedef HANDLE DeviceHandle;
+#define INVALID_DEVICE_HANDLE INVALID_HANDLE_VALUE
 
 
 // // ------------------------------------------------------------
@@ -31,7 +31,14 @@
 // //         INVALID_DEVICE_HANDLE nếu thất bại
 // //         (thất bại thường do chưa chạy với quyền Administrator)
 // // ------------------------------------------------------------
-// DeviceHandle openDevice(const char* path);
+DeviceHandle openDevice(const char* path);
+
+
+// // ------------------------------------------------------------
+// // Đóng thiết bị sau khi dùng xong
+// // Luôn gọi hàm này trước khi thoát chương trình
+// // ------------------------------------------------------------
+void closeDevice(DeviceHandle handle);
 
 
 // // ------------------------------------------------------------
@@ -47,7 +54,7 @@
 // // Trả về: true nếu đọc thành công và đọc đủ sectorSize byte
 // //         false nếu seek thất bại hoặc đọc không đủ byte
 // // ------------------------------------------------------------
-// bool readSector(DeviceHandle handle, uint64_t sectorNum, uint8_t* buffer, uint32_t sectorSize);
+bool readSector(DeviceHandle handle, uint64_t sectorNum, uint8_t* buffer, uint32_t sectorSize);
 
 
 // // ------------------------------------------------------------
@@ -64,15 +71,7 @@
 // //
 // // Trả về: true nếu đọc thành công toàn bộ count sector
 // // ------------------------------------------------------------
-// bool readSectors(DeviceHandle handle, uint64_t startSector, uint32_t count,
-//                  uint8_t* buffer, uint32_t sectorSize);
-
-
-// // ------------------------------------------------------------
-// // Đóng thiết bị sau khi dùng xong
-// // Luôn gọi hàm này trước khi thoát chương trình
-// // ------------------------------------------------------------
-// void closeDevice(DeviceHandle handle);
+// bool readSectors(DeviceHandle handle, uint64_t startSector, uint32_t count, uint8_t* buffer, uint32_t sectorSize);
 
 
 // // ------------------------------------------------------------
