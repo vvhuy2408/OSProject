@@ -32,37 +32,37 @@ struct BootSector {
 };
 
 
-// // ------------------------------------------------------------
-// // Thông tin một entry trong bảng thư mục (Directory Entry)
-// // Dev B dùng để liệt kê file và lấy thông tin file
-// // ------------------------------------------------------------
-// struct DirEntry {
-//     char     name[9];              // Tên file 8.3, phần tên (null-terminated)
-//     char     ext[4];               // Tên file 8.3, phần mở rộng (null-terminated)
-//     uint8_t  attributes;           // Thuộc tính: 0x10 = thư mục, 0x20 = file thường
-//     uint32_t firstCluster;         // Cluster đầu tiên chứa dữ liệu file/thư mục
-//     uint32_t fileSize;             // Kích thước file tính bằng byte (0 nếu là thư mục)
-//     uint16_t creationTime;         // Thời gian tạo (packed: 5b giờ, 6b phút, 5b giây/2)
-//     uint16_t creationDate;         // Ngày tạo (packed: 7b năm từ 1980, 4b tháng, 5b ngày)
-//     std::string fullPath;          // Đường dẫn đầy đủ từ root (do Dev B điền khi duyệt)
-// };
+// ------------------------------------------------------------
+// Thông tin một entry trong bảng thư mục (Directory Entry)
+// Dev B dùng để liệt kê file và lấy thông tin file
+// ------------------------------------------------------------
+struct DirEntry {
+    char     name[9];              // Tên file 8.3, phần tên (null-terminated)
+    char     ext[4];               // Tên file 8.3, phần mở rộng (null-terminated)
+    uint8_t  attributes;           // Thuộc tính: 0x10 = thư mục, 0x20 = file thường
+    uint32_t firstCluster;         // Cluster đầu tiên chứa dữ liệu file/thư mục
+    uint32_t fileSize;             // Kích thước file tính bằng byte (0 nếu là thư mục)
+    uint16_t creationTime;         // Thời gian tạo (packed: 5b giờ, 6b phút, 5b giây/2)
+    uint16_t creationDate;         // Ngày tạo (packed: 7b năm từ 1980, 4b tháng, 5b ngày)
+    std::string fullPath;          // Đường dẫn đầy đủ từ root (do Dev B điền khi duyệt)
+};
 
 
-// // ------------------------------------------------------------
-// // Thông tin hiển thị của một file .txt được chọn - Chức năng 3
-// // Dev B tạo ra, GUI hiển thị
-// // ------------------------------------------------------------
-// struct FileInfo {
-//     std::string name;              // Tên file đầy đủ (ví dụ: SCHEDULE.TXT)
-//     std::string fullPath;          // Đường dẫn đầy đủ từ root
-//     uint32_t    fileSize;          // Kích thước file tính bằng byte
-//     int         creationYear;      // Năm tạo file (ví dụ: 2024)
-//     int         creationMonth;     // Tháng tạo file (1-12)
-//     int         creationDay;       // Ngày tạo file (1-31)
-//     int         creationHour;      // Giờ tạo file (0-23)
-//     int         creationMinute;    // Phút tạo file (0-59)
-//     int         creationSecond;    // Giây tạo file (0-58, bội số của 2)
-// };
+// ------------------------------------------------------------
+// Thông tin hiển thị của một file .txt được chọn - Chức năng 3
+// Dev B tạo ra, GUI hiển thị
+// ------------------------------------------------------------
+struct FileInfo {
+    std::string name;              // Tên file đầy đủ (ví dụ: SCHEDULE.TXT)
+    std::string fullPath;          // Đường dẫn đầy đủ từ root
+    uint32_t    fileSize;          // Kích thước file tính bằng byte
+    int         creationYear;      // Năm tạo file (ví dụ: 2024)
+    int         creationMonth;     // Tháng tạo file (1-12)
+    int         creationDay;       // Ngày tạo file (1-31)
+    int         creationHour;      // Giờ tạo file (0-23)
+    int         creationMinute;    // Phút tạo file (0-59)
+    int         creationSecond;    // Giây tạo file (0-58, bội số của 2)
+};
 
 
 // // ------------------------------------------------------------
@@ -112,23 +112,23 @@ struct BootSector {
 // };
 
 
-// // ------------------------------------------------------------
-// // Hằng số thuộc tính Directory Entry
-// // ------------------------------------------------------------
-// #define ATTR_READ_ONLY  0x01
-// #define ATTR_HIDDEN     0x02
-// #define ATTR_SYSTEM     0x04
-// #define ATTR_VOLUME_ID  0x08
-// #define ATTR_DIRECTORY  0x10       // Entry này là thư mục
-// #define ATTR_ARCHIVE    0x20       // Entry này là file thông thường
-// #define ATTR_LFN        0x0F       // Long File Name entry (bỏ qua khi duyệt)
+// ------------------------------------------------------------
+// Hằng số thuộc tính Directory Entry
+// ------------------------------------------------------------
+#define ATTR_READ_ONLY  0x01
+#define ATTR_HIDDEN     0x02
+#define ATTR_SYSTEM     0x04
+#define ATTR_VOLUME_ID  0x08
+#define ATTR_DIRECTORY  0x10       // Entry này là thư mục
+#define ATTR_ARCHIVE    0x20       // Entry này là file thông thường
+#define ATTR_LFN        0x0F       // Long File Name entry (bỏ qua khi duyệt)
 
-// // Giá trị byte đầu của entry cho biết trạng thái
-// #define ENTRY_FREE      0x00       // Entry trống, không còn entry nào sau đó
-// #define ENTRY_DELETED   0xE5       // Entry đã bị xóa, bỏ qua
+// Giá trị byte đầu của entry cho biết trạng thái
+#define ENTRY_FREE      0x00       // Entry trống, không còn entry nào sau đó
+#define ENTRY_DELETED   0xE5       // Entry đã bị xóa, bỏ qua
 
-// // Giá trị FAT báo hiệu cuối chuỗi cluster
-// #define FAT32_EOC       0x0FFFFFF8 // End of Cluster chain
-// #define FAT32_MASK      0x0FFFFFFF // Mask 4 bit cao khi đọc giá trị FAT
+// Giá trị FAT báo hiệu cuối chuỗi cluster
+#define FAT32_EOC       0x0FFFFFF8 // End of Cluster chain
+#define FAT32_MASK      0x0FFFFFFF // Mask 4 bit cao khi đọc giá trị FAT
 
 #endif

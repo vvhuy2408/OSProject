@@ -71,20 +71,20 @@ bool readSector(DeviceHandle handle, uint64_t sectorNum, uint8_t* buffer, uint32
 }
 
 
-// bool readSectors(DeviceHandle handle, uint64_t startSector, uint32_t count,
-//                  uint8_t* buffer, uint32_t sectorSize) {
-//     LARGE_INTEGER offset;
-//     offset.QuadPart = (LONGLONG)startSector * sectorSize;
-//     if (!SetFilePointerEx(handle, offset, NULL, FILE_BEGIN)) {
-//         return false;
-//     }
-//     DWORD totalBytes = count * sectorSize;
-//     DWORD bytesRead  = 0;
-//     if (!ReadFile(handle, buffer, totalBytes, &bytesRead, NULL)) {
-//         return false;
-//     }
-//     return (bytesRead == totalBytes);
-// }
+bool readSectors(DeviceHandle handle, uint64_t startSector, uint32_t count,
+                 uint8_t* buffer, uint32_t sectorSize) {
+    LARGE_INTEGER offset;
+    offset.QuadPart = (LONGLONG)startSector * sectorSize;
+    if (!SetFilePointerEx(handle, offset, NULL, FILE_BEGIN)) {
+        return false;
+    }
+    DWORD totalBytes = count * sectorSize;
+    DWORD bytesRead  = 0;
+    if (!ReadFile(handle, buffer, totalBytes, &bytesRead, NULL)) {
+        return false;
+    }
+    return (bytesRead == totalBytes);
+}
 
 
 // std::string getLastErrorMessage() {
