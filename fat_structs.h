@@ -69,13 +69,7 @@ struct FileInfo {
 // // Thông tin một tiến trình - Dev B parse từ file .txt
 // // Dev A dùng để chạy thuật toán lập lịch
 // // ------------------------------------------------------------
-// struct Process {
-//     int pid;                       // Process ID
-//     int arrivalTime;               // Thời điểm tiến trình đến hàng đợi
-//     int burstTime;                 // Tổng thời gian CPU cần để chạy xong
-//     int priority;                  // Độ ưu tiên (số nhỏ hơn = ưu tiên cao hơn, tùy quy ước)
-//     int timeSlice;                 // Time quantum cho Round Robin (0 nếu không dùng RR)
-// };
+
 
 
 // // ------------------------------------------------------------

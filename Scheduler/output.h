@@ -3,7 +3,6 @@
 
 #include "model.h"
 #include "scheduler.h"
-#include <vector>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
