@@ -48,7 +48,7 @@ bool readBootSector(DeviceHandle handle, BootSector* out);
 // // Hàm này chỉ đọc offset và copy dữ liệu, không có logic phức tạp.
 // // Tách riêng với readBootSector() để dễ unit test.
 // // ------------------------------------------------------------
-void parseBootSector(const uint8_t* buffer, BootSector* out);
+bool parseBootSector(const uint8_t* buffer, BootSector* out);
 
 
 // // ------------------------------------------------------------

@@ -7,11 +7,11 @@
 // // ============================================================
 
 static uint16_t readUInt16(const unsigned char* buf, int offset) {
-    return buf[offset] | (buf[offset + 1] << 8);
+    return (uint16_t)buf[offset] | ((uint16_t)buf[offset + 1] << 8);
 }
 
 static uint32_t readUInt32(const unsigned char* buf, int offset) {
-    return buf[offset] | (buf[offset + 1] << 8) | (buf[offset + 2] << 16) |(buf[offset + 3] << 24);
+    return (uint32_t)buf[offset] | ((uint32_t)buf[offset + 1] << 8) | ((uint32_t)buf[offset + 2] << 16) | ((uint32_t)buf[offset + 3] << 24);
 }
 
 bool isValidFAT32(const uint8_t* buffer) {
@@ -33,7 +33,7 @@ bool isValidFAT32(const uint8_t* buffer) {
         return false;
     }
 
-//     // TODO: Có thể thêm kiểm tra chữ ký "FAT32   " tại offset 82 nếu cần
+    // TODO: Có thể thêm kiểm tra chữ ký "FAT32   " tại offset 82 nếu cần
     return true;
 }
 
@@ -52,11 +52,10 @@ bool readBootSector(DeviceHandle handle, BootSector* out) {
     }
 
     // Check signature
-    if (!isValidFAT32(buffer)) {
+    if (!parseBootSector(buffer, out)) {
         return false;
     }
 
-    parseBootSector(buffer, out);
     return true;
 }
 
@@ -70,16 +69,29 @@ bool readBootSector(DeviceHandle handle, BootSector* out) {
 // // RootCluster        : offset 44, size 4 bytes
 // // fsInfoSector       : offset 48, size 2 bytes
 
-void parseBootSector(const uint8_t* buffer, BootSector* out) {
-    if (out == nullptr) return;
+bool parseBootSector(const uint8_t* buffer, BootSector* out) {
+    if (!buffer || !out) return false;
+
+    // Basic FAT32 format validation
+    if (!isValidFAT32(buffer)) {
+        return false;
+    }
+
+    uint8_t numFATs = buffer[16];                       // offset 16 (1bytes)
+    uint32_t fatSize32 = readUInt32(buffer, 36);        // offset 36 (4bytes)
+
+    // Logical validation for our program
+    if (numFATs == 0 || fatSize32 == 0)
+        return false;
+
     // Đọc từng trường theo offset chuẩn FAT32
-    out->bytesPerSector = readUInt16(buffer, 11);    //offset 11 (2byte)
-    out->sectorsPerCluster = buffer[13];    //offset 13 (1byte)
-    out->reservedSectors = readUInt16(buffer, 14);    //offset 14 (2byte)
-    out->numFATs = buffer[16];    //offset 16 (1bytes)
-    out->totalSectors32 = readUInt32(buffer, 32);    //offset 32 (4bytes)
-    out->fatSize32 = readUInt32(buffer, 36);    //offset 36 (4bytes)
-    out->rootCluster = readUInt32(buffer, 44);    //offset 44 (4bytes)
+    out->bytesPerSector = readUInt16(buffer, 11);       //offset 11 (2byte)    
+    out->sectorsPerCluster = buffer[13];                //offset 13 (1byte)    
+    out->reservedSectors = readUInt16(buffer, 14);      // offset 14 (2byte)
+    out->numFATs = numFATs;                             // buffer[16];    
+    out->totalSectors32 = readUInt32(buffer, 32);       // offset 32 (4bytes)
+    out->fatSize32 = fatSize32;                         // readUInt32(buffer, 36);    
+    out->rootCluster = readUInt32(buffer, 44);          // offset 44 (4bytes)
     out->fsInfoSector = readUInt16(buffer, 48);
 
     // Text -> Dùng memcpy thay vì ép kiểu con trỏ để tránh vấn đề alignment và padding
@@ -90,6 +102,8 @@ void parseBootSector(const uint8_t* buffer, BootSector* out) {
     // Volume Label tại offset 71, 11 byte, thêm null terminator
     memcpy(out->volumeLabel, buffer + 71, 11);
     out->volumeLabel[11] = '\0';
+
+    return true;
 }
 
 
