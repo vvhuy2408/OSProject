@@ -1,8 +1,6 @@
 #pragma once
 #include "fat_structs.h"
 #include "device.h"
-#include <vector>
-
 // ============================================================
 // fat_table.h / fat_table.cpp
 // TRÁCH NHIỆM: Dev B

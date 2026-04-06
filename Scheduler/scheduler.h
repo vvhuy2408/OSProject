@@ -3,7 +3,6 @@
 #include "model.h"
 
 using namespace std;
-#include <vector>
 
 // represents a single execution segment in the gantt chart
 struct Segment {

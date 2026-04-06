@@ -1,15 +1,14 @@
 #include <cstdio>
-// #include <string>
-// #include <vector>
 
 #include "fat_structs.h"
 #include "device.h"
 #include "boot_sector.h"
 #include "fat_table.h"
-// #include "directory.h"
-// #include "file_reader.h"
+#include "directory.h"
+#include "file_reader.h"
+#include "Scheduler/parser.h"
 // #include "scheduler.h"
-
+#include "Scheduler/model.h"
 // // ============================================================
 // // main.cpp
 // // Điểm khởi đầu của chương trình.
@@ -211,6 +210,123 @@ int main(int argc, char* argv[]) {
         else if (val == 0)          printf("  (cluster trong)");
         else                        printf("  (next cluster: %u)", val);
         printf("\n");
+    }
+
+    printf("\n========================================\n");
+    printf("     TEST GIAI DOAN 2 - DEV B\n");
+    printf("========================================\n");
+
+    // --- CHUC NANG 2: Liet ke toan bo file .txt ---
+    printf("\n=== [CF2] Liet ke file .txt ===\n");
+
+    std::vector<DirEntry> txtFiles;
+    listAllTxtFiles(handle, boot, fatTable, txtFiles);
+
+    if (txtFiles.empty()) {
+        printf("Khong tim thay file .txt nao.\n");
+        printf("  -> Hay copy it nhat 1 file .txt vao USB roi chay lai.\n");
+        printf("  -> Kiem tra them: file co duoi .txt viet THUONG khong?\n");
+        printf("     FAT32 luu phan mo rong dang VIET HOA (TXT), neu\n");
+        printf("     isTxtFile dung strcmp voi 'TXT' thi file .txt\n");
+        printf("     viet thuong tren Linux se khong tim thay duoc.\n");
+    } else {
+        printf("Tim thay %zu file .txt:\n", txtFiles.size());
+        for (size_t i = 0; i < txtFiles.size(); i++) {
+            printf("  [%zu] %s\n",       i + 1, txtFiles[i].fullPath.c_str());
+            printf("       Kich thuoc : %u bytes\n", txtFiles[i].fileSize);
+            printf("       Cluster dau: %u\n",       txtFiles[i].firstCluster);
+        }
+    }
+
+    // --- CHUC NANG 3: Hien thi thong tin chi tiet file dau tien ---
+    if (!txtFiles.empty()) {
+        printf("\n=== [CF3] Thong tin chi tiet file: %s ===\n",
+            txtFiles[0].fullPath.c_str());
+
+        FileInfo info;
+        buildFileInfo(txtFiles[0], info);
+
+        printf("  Ten file    : %s\n",    info.name.c_str());
+        printf("  Duong dan   : %s\n",    info.fullPath.c_str());
+        printf("  Kich thuoc  : %u bytes\n", info.fileSize);
+        printf("  Ngay tao    : %04d/%02d/%02d\n",
+            info.creationYear, info.creationMonth, info.creationDay);
+        printf("  Gio tao     : %02d:%02d:%02d\n",
+            info.creationHour, info.creationMinute, info.creationSecond);
+
+        // Kiem tra nhanh ngay gio co hop ly khong
+        bool dateOk = (info.creationYear >= 1980 && info.creationYear <= 2107)
+                && (info.creationMonth >= 1   && info.creationMonth <= 12)
+                && (info.creationDay   >= 1   && info.creationDay   <= 31);
+        bool timeOk = (info.creationHour   <= 23)
+                && (info.creationMinute <= 59)
+                && (info.creationSecond <= 58);
+
+        if (!dateOk)
+            printf("  CANH BAO: Ngay tao vo ly, kiem tra lai offset 22/24"
+                " trong parseDirectoryEntry.\n");
+        if (!timeOk)
+            printf("  CANH BAO: Gio tao vo ly, kiem tra lai offset 22/24"
+                " trong parseDirectoryEntry.\n");
+        if (dateOk && timeOk)
+            printf("  OK: Ngay gio hop le.\n");
+
+        // --- Doc noi dung file ---
+        printf("\n=== [CF3] Noi dung file: %s ===\n",
+            txtFiles[0].fullPath.c_str());
+
+        std::string content;
+        bool readOk = readFileContent(handle, boot, fatTable,
+                                    txtFiles[0].firstCluster,
+                                    txtFiles[0].fileSize,
+                                    content);
+        if (!readOk) {
+            printf("THAT BAI: Khong doc duoc noi dung file.\n");
+            printf("  -> Kiem tra lai readSectors va clusterToSector.\n");
+        } else {
+            printf("Doc thanh cong %zu bytes (fileSize khai bao: %u bytes).\n",
+                content.size(), txtFiles[0].fileSize);
+            printf("--- Noi dung ---\n%s\n", content.c_str());
+
+            // --- Parse danh sach tien trinh ---
+            printf("\n=== [CF3] Parse danh sach tien trinh ===\n");
+            std::vector<SchedulingQueue> qList;
+            std::vector<Process> pList;
+
+            // parse input file
+            Parser parser;
+            parser.parseFromString(content, qList, pList);
+
+            if (pList.empty()) {
+                printf("Khong parse duoc tien trinh nao.\n");
+                printf("  -> Kiem tra dinh dang file: dong dau co phai header khong,\n");
+                printf("     cac gia tri cach nhau bang dau phay chua?\n");
+            } else {
+                printf("Parse thanh cong %zu tien trinh:\n", pList.size());
+                printf("  %-6s %-10s %-8s %-10s\n",
+                    "PID", "Arrival", "Burst", "Queue");
+                printf("  %s\n", std::string(46, '-').c_str());
+                for (auto& p : pList) {
+                    printf("  %-6s %-10d %-8d %-10d \n",
+                        p.pID.c_str(), p.arrivalTime, p.burstTime,
+                        p.curQueueID);
+                }
+            }
+        }
+
+        // --- Neu co nhieu hon 1 file, in ten cac file con lai ---
+        if (txtFiles.size() > 1) {
+            printf("\n=== Cac file .txt con lai (chua doc noi dung) ===\n");
+            for (size_t i = 1; i < txtFiles.size(); i++) {
+                FileInfo fi;
+                buildFileInfo(txtFiles[i], fi);
+                printf("  [%zu] %s | %u bytes | %04d/%02d/%02d %02d:%02d:%02d\n",
+                    i + 1,
+                    fi.fullPath.c_str(), fi.fileSize,
+                    fi.creationYear, fi.creationMonth, fi.creationDay,
+                    fi.creationHour, fi.creationMinute, fi.creationSecond);
+            }
+        }
     }
 
     // 4. Đóng thiết bị

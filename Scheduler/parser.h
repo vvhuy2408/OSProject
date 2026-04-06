@@ -11,7 +11,7 @@
 class Parser {
 public:
     void readFile(std::string file, std::vector<SchedulingQueue>& qList, std::vector<Process>& pList);
-
+    void parseFromString(const std::string& content, std::vector<SchedulingQueue>& qList, std::vector<Process>& pList);
 };
 
 #endif
