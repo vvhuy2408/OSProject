@@ -1,8 +1,9 @@
 #ifndef FAT_STRUCTS
-# define FAT_STRUCTS
+#define FAT_STRUCTS
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "Scheduler/model.h"
 
 // // ============================================================
 // // fat_structs.h
@@ -62,6 +63,8 @@ struct FileInfo {
     int         creationHour;      // Giờ tạo file (0-23)
     int         creationMinute;    // Phút tạo file (0-59)
     int         creationSecond;    // Giây tạo file (0-58, bội số của 2)
+    std::vector<SchedulingQueue> queues;    // danh sach hang doi
+    std::vector<Process>         processes; // danh sach tien trinh
 };
 
 

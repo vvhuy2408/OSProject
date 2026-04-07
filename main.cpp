@@ -7,6 +7,7 @@
 #include "directory.h"
 #include "file_reader.h"
 #include "Scheduler/parser.h"
+#include "GUI/gui.h"
 // #include "scheduler.h"
 #include "Scheduler/model.h"
 // // ============================================================
@@ -238,6 +239,30 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    // Convert DirEntry sang FileInfo de truyen vao GUI
+    std::vector<FileInfo> fileInfoList;
+    for (auto& entry : txtFiles) {
+        FileInfo fi;
+        buildFileInfo(entry, fi);
+
+        // Doc noi dung va parse tien trinh cho tung file
+        std::string content;
+        bool readOk = readFileContent(handle, boot, fatTable,
+                                    entry.firstCluster,
+                                    entry.fileSize,
+                                    content);
+        if (readOk && !content.empty()) {
+            std::vector<SchedulingQueue> qList;
+            std::vector<Process> pList;
+            Parser parser;
+            parser.parseFromString(content, qList, pList);
+            fi.queues    = qList;
+            fi.processes = pList;
+        }
+
+        fileInfoList.push_back(fi);
+    }
+
     // --- CHUC NANG 3: Hien thi thong tin chi tiet file dau tien ---
     if (!txtFiles.empty()) {
         printf("\n=== [CF3] Thong tin chi tiet file: %s ===\n",
@@ -296,7 +321,15 @@ int main(int argc, char* argv[]) {
             // parse input file
             Parser parser;
             parser.parseFromString(content, qList, pList);
-
+            
+            if (!fileInfoList.empty()) {
+                std::vector<SchedulingQueue> qList;
+                std::vector<Process> pList;
+                Parser parser;
+                parser.parseFromString(content, qList, pList);
+                fileInfoList[0].queues    = qList;
+                fileInfoList[0].processes = pList;
+            }
             if (pList.empty()) {
                 printf("Khong parse duoc tien trinh nao.\n");
                 printf("  -> Kiem tra dinh dang file: dong dau co phai header khong,\n");
@@ -329,10 +362,20 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // 4. Đóng thiết bị
-    closeDevice(handle);
+    // Khoi dong GUI
+    if (!initGUI()) {
+        printf("THAT BAI: Khong khoi dong duoc GUI.\n");
+        closeDevice(handle);
+        return 1;
+    }
 
-    printf("\n=== DONE ===\n");
+    // Chay GUI - ham nay block den khi nguoi dung dong cua so
+    runGUI(std::string(devicePath), boot, fileInfoList);
+
+    // Don dep
+    cleanupGUI();
+    closeDevice(handle);
+    return 0;
     return 0;
 }
 
