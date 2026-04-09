@@ -246,86 +246,32 @@ void runGUI(const std::string&           devicePath,
                                                   : std::vector<Segment>();
 
                 if (!tl.empty()) {
-                    std::unordered_map<std::string, ImU32> colors;
-                    std::vector<ImU32> palette = {
-                        IM_COL32(255, 99, 132, 255),
-                        IM_COL32(54, 162, 235, 255),
-                        IM_COL32(255, 206, 86, 255),
-                        IM_COL32(75, 192, 192, 255),
-                        IM_COL32(153, 102, 255, 255),
-                        IM_COL32(255, 159, 64, 255)
-                    };
+                    if (ImGui::BeginTable("gantt_chart_table", 3,
+                            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
+                            ImGuiTableFlags_ScrollY,
+                            ImVec2(0, 250))) {
 
-                    int idx = 0;
-                    for (auto& p : f.processes) {
-                        colors[p.pID] = palette[idx % palette.size()];
-                        idx++;
+                        ImGui::TableSetupScrollFreeze(0, 1);
+                        ImGui::TableSetupColumn("Start - End");
+                        ImGui::TableSetupColumn("Queue");
+                        ImGui::TableSetupColumn("Process");
+                        ImGui::TableHeadersRow();
+
+                        for (auto& seg : tl) {
+                            ImGui::TableNextRow();
+                            
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Text("%d - %d", seg.start, seg.end);
+                            
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::Text("%s", seg.qID.c_str());
+                            
+                            ImGui::TableSetColumnIndex(2);
+                            ImGui::Text("%s", seg.pID.c_str());
+                        }
+
+                        ImGui::EndTable();
                     }
-
-                    // scale
-                    const float scale = 30.0f;
-                    const float blockHeight = 25.0f;
-                    const float maxWidth = 650.0f;
-
-                    // Get min/max time
-                    int minTime = tl[0].start;
-                    int maxTime = tl[0].end;
-                    for (auto& seg : tl) {
-                        minTime = std::min(minTime, seg.start);
-                        maxTime = std::max(maxTime, seg.end);
-                    }
-
-                    // Scrollable area for gantt chart
-                    ImGui::BeginChild("gantt_scroll", ImVec2(800, (blockHeight + 40) * 2 + 20), 
-                                     true, ImGuiWindowFlags_HorizontalScrollbar);
-
-                    ImDrawList* drawList = ImGui::GetWindowDrawList();
-                    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
-                    float baseX = canvasPos.x + 50;
-                    float y = canvasPos.y + 5;
-
-                    // Draw time ticks and grid lines
-                    int timeInterval = std::max(1, (maxTime - minTime) / 8);
-                    
-                    for (int t = minTime; t <= maxTime; t += timeInterval) {
-                        float xPos = baseX + (t - minTime) * scale;
-                        
-                        // Grid line
-                        drawList->AddLine(ImVec2(xPos, y - 5), 
-                                        ImVec2(xPos, y + blockHeight + 5),
-                                        IM_COL32(100, 100, 100, 80), 0.5f);
-                        
-                        // Time label
-                        char buf[16];
-                        snprintf(buf, sizeof(buf), "%d", t);
-                        drawList->AddText(ImVec2(xPos - 12, y + blockHeight + 5),
-                                        IM_COL32(180, 180, 180, 255), buf);
-                    }
-
-                    // vẽ timeline blocks
-                    for (auto& seg : tl) {
-                        float xStart = baseX + (seg.start - minTime) * scale;
-                        float width = (seg.end - seg.start) * scale;
-                        if (width < 2.0f) width = 2.0f;
-
-                        ImVec2 p1(xStart, y);
-                        ImVec2 p2(xStart + width, y + blockHeight);
-
-                        ImU32 color = IM_COL32(200, 200, 200, 255);
-
-                        if (seg.pID != "IDLE" && colors.count(seg.pID))
-                            color = colors[seg.pID];
-
-                        drawList->AddRectFilled(p1, p2, color);
-                        drawList->AddRect(p1, p2, IM_COL32(0, 0, 0, 255), 1.0f);
-
-                        // PID text
-                        ImVec2 textPos(xStart + 3, y + 4);
-                        drawList->AddText(textPos, IM_COL32(0, 0, 0, 255), seg.pID.c_str());
-                    }
-
-                    ImGui::Dummy(ImVec2((maxTime - minTime) * scale + 100, blockHeight + 40));
-                    ImGui::EndChild();
                 } else {
                     ImGui::TextDisabled("Khong co du lieu timeline.");
                 }
