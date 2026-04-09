@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "Scheduler/model.h"
+#include "Scheduler/scheduler.h"
 
 // // ============================================================
 // // fat_structs.h
@@ -65,6 +66,7 @@ struct FileInfo {
     int         creationSecond;    // Giây tạo file (0-58, bội số của 2)
     std::vector<SchedulingQueue> queues;    // danh sach hang doi
     std::vector<Process>         processes; // danh sach tien trinh
+    std::vector<Segment>         timeline;  // ket qua lap lich (Gantt Chart)
 };
 
 

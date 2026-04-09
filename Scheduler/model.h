@@ -40,7 +40,17 @@ struct Process {
 
         return std::stoi(q.substr(1));
     }
+    
+    Process() : pID(""), arrivalTime(0), burstTime(0), remainingTime(0), 
+                priority(0), curQueueID(0) {}
 
+    Process(std::string id, int at, int bt, int prio, int qID)
+    : pID(id),
+      arrivalTime(at),
+      burstTime(bt),
+      remainingTime(bt),
+      priority(prio),
+      curQueueID(qID) {}
 };
 
 struct SchedulingQueue {
