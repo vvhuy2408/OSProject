@@ -5,6 +5,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <stdio.h>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
 
 static SDL_Window*   gWindow   = nullptr;
 static SDL_GLContext gGLContext = nullptr;
@@ -232,6 +235,185 @@ void runGUI(const std::string&           devicePath,
 
                     ImGui::EndTable();
                 }
+
+                // ================= GANTT CHART =================
+                ImGui::Separator();
+                ImGui::Text("Gantt Chart:");
+
+                // Lay timeline tu file duoc chon
+                const std::vector<Segment>& tl = (selectedFile >= 0 && selectedFile < (int)files.size())
+                                                  ? files[selectedFile].timeline
+                                                  : std::vector<Segment>();
+
+                if (!tl.empty()) {
+                    std::unordered_map<std::string, ImU32> colors;
+                    std::vector<ImU32> palette = {
+                        IM_COL32(255, 99, 132, 255),
+                        IM_COL32(54, 162, 235, 255),
+                        IM_COL32(255, 206, 86, 255),
+                        IM_COL32(75, 192, 192, 255),
+                        IM_COL32(153, 102, 255, 255),
+                        IM_COL32(255, 159, 64, 255)
+                    };
+
+                    int idx = 0;
+                    for (auto& p : f.processes) {
+                        colors[p.pID] = palette[idx % palette.size()];
+                        idx++;
+                    }
+
+                    // scale
+                    const float scale = 30.0f;
+                    const float blockHeight = 25.0f;
+                    const float maxWidth = 650.0f;
+
+                    // Get min/max time
+                    int minTime = tl[0].start;
+                    int maxTime = tl[0].end;
+                    for (auto& seg : tl) {
+                        minTime = std::min(minTime, seg.start);
+                        maxTime = std::max(maxTime, seg.end);
+                    }
+
+                    // Scrollable area for gantt chart
+                    ImGui::BeginChild("gantt_scroll", ImVec2(800, (blockHeight + 40) * 2 + 20), 
+                                     true, ImGuiWindowFlags_HorizontalScrollbar);
+
+                    ImDrawList* drawList = ImGui::GetWindowDrawList();
+                    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+                    float baseX = canvasPos.x + 50;
+                    float y = canvasPos.y + 5;
+
+                    // Draw time ticks and grid lines
+                    int timeInterval = std::max(1, (maxTime - minTime) / 8);
+                    
+                    for (int t = minTime; t <= maxTime; t += timeInterval) {
+                        float xPos = baseX + (t - minTime) * scale;
+                        
+                        // Grid line
+                        drawList->AddLine(ImVec2(xPos, y - 5), 
+                                        ImVec2(xPos, y + blockHeight + 5),
+                                        IM_COL32(100, 100, 100, 80), 0.5f);
+                        
+                        // Time label
+                        char buf[16];
+                        snprintf(buf, sizeof(buf), "%d", t);
+                        drawList->AddText(ImVec2(xPos - 12, y + blockHeight + 5),
+                                        IM_COL32(180, 180, 180, 255), buf);
+                    }
+
+                    // vẽ timeline blocks
+                    for (auto& seg : tl) {
+                        float xStart = baseX + (seg.start - minTime) * scale;
+                        float width = (seg.end - seg.start) * scale;
+                        if (width < 2.0f) width = 2.0f;
+
+                        ImVec2 p1(xStart, y);
+                        ImVec2 p2(xStart + width, y + blockHeight);
+
+                        ImU32 color = IM_COL32(200, 200, 200, 255);
+
+                        if (seg.pID != "IDLE" && colors.count(seg.pID))
+                            color = colors[seg.pID];
+
+                        drawList->AddRectFilled(p1, p2, color);
+                        drawList->AddRect(p1, p2, IM_COL32(0, 0, 0, 255), 1.0f);
+
+                        // PID text
+                        ImVec2 textPos(xStart + 3, y + 4);
+                        drawList->AddText(textPos, IM_COL32(0, 0, 0, 255), seg.pID.c_str());
+                    }
+
+                    ImGui::Dummy(ImVec2((maxTime - minTime) * scale + 100, blockHeight + 40));
+                    ImGui::EndChild();
+                } else {
+                    ImGui::TextDisabled("Khong co du lieu timeline.");
+                }
+
+                ImGui::Separator();
+                ImGui::Text("Turnaround & Waiting Time:");
+
+                if (ImGui::BeginTable("tat_wt_table", 6,
+                        ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+
+                    ImGui::TableSetupColumn("Process");
+                    ImGui::TableSetupColumn("Arrival");
+                    ImGui::TableSetupColumn("Burst");
+                    ImGui::TableSetupColumn("Completion Time");
+                    ImGui::TableSetupColumn("Turnaround Time");
+                    ImGui::TableSetupColumn("Waiting Time");
+                    ImGui::TableHeadersRow();
+                    
+                    auto getCompletionTime = [&](const std::string& pid) -> int {
+                        int completion = -1;
+
+                        for (const auto& seg : tl) {
+                            if (seg.pID == pid) {
+                                completion = std::max(completion, seg.end);
+                            }
+                        }
+
+                        return completion;
+                    };
+
+                    double totalTAT = 0, totalWT = 0;
+                    int processCount = 0;
+
+                    for (auto& p : f.processes) {
+                        int completionTime = getCompletionTime(p.pID);
+
+                        int tat = 0;
+                        int wt  = 0;
+
+                        if (completionTime != -1) {
+                            tat = completionTime - p.arrivalTime;
+                            wt  = tat - p.burstTime;
+                            totalTAT += tat;
+                            totalWT += wt;
+                            processCount++;
+                        }
+
+                        ImGui::TableNextRow();
+
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%s", p.pID.c_str());
+
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%d", p.arrivalTime);
+
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("%d", p.burstTime);
+
+                        ImGui::TableSetColumnIndex(3);
+                        ImGui::Text("%d", completionTime);
+
+                        ImGui::TableSetColumnIndex(4);
+                        ImGui::Text("%d", tat);
+
+                        ImGui::TableSetColumnIndex(5);
+                        ImGui::Text("%d", wt);
+                    }
+
+                    // Average row
+                    if (processCount > 0) {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Average");
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextDisabled("-");
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::TextDisabled("-");
+                        ImGui::TableSetColumnIndex(3);
+                        ImGui::TextDisabled("-");
+                        ImGui::TableSetColumnIndex(4);
+                        ImGui::Text("%.2f", totalTAT / processCount);
+                        ImGui::TableSetColumnIndex(5);
+                        ImGui::Text("%.2f", totalWT / processCount);
+                    }
+
+                    ImGui::EndTable();
+                }
+
             }
         } else {
             ImGui::TextDisabled("Chon mot file ben trai de xem chi tiet...");
