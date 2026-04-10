@@ -150,7 +150,7 @@ void runGUI(const std::string&           devicePath,
                 ImGui::Text("Danh sach tien trinh (%zu):", f.processes.size());
                 ImGui::Spacing();
 
-                if (ImGui::BeginTable("proc_table", 6,
+                if (ImGui::BeginTable("proc_table", 5,
                         ImGuiTableFlags_Borders      |
                         ImGuiTableFlags_RowBg        |
                         ImGuiTableFlags_ScrollY      |
@@ -162,7 +162,6 @@ void runGUI(const std::string&           devicePath,
                     ImGui::TableSetupColumn("Process ID");
                     ImGui::TableSetupColumn("Arrival Time");
                     ImGui::TableSetupColumn("CPU Burst Time");
-                    ImGui::TableSetupColumn("Priority");
                     ImGui::TableSetupColumn("Queue ID");
                     ImGui::TableSetupColumn("Time Slice");
                     ImGui::TableHeadersRow();
@@ -190,12 +189,9 @@ void runGUI(const std::string&           devicePath,
                         ImGui::Text("%d", p.burstTime);
 
                         ImGui::TableSetColumnIndex(3);
-                        ImGui::Text("%d", p.priority);
-
-                        ImGui::TableSetColumnIndex(4);
                         ImGui::Text("Q%d", p.curQueueID);
 
-                        ImGui::TableSetColumnIndex(5);
+                        ImGui::TableSetColumnIndex(4);
                         if (q) ImGui::Text("%d", q->timeSlice);
                         else   ImGui::TextDisabled("-");
                     }
