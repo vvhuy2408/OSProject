@@ -85,29 +85,3 @@ bool readSectors(DeviceHandle handle, uint64_t startSector, uint32_t count,
     }
     return (bytesRead == totalBytes);
 }
-
-
-// std::string getLastErrorMessage() {
-//     DWORD errorCode = GetLastError();
-//     if (errorCode == 0) return "No error";
-
-//     LPSTR messageBuffer = nullptr;
-//     FormatMessageA(
-//         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-//         NULL,
-//         errorCode,
-//         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-//         (LPSTR)&messageBuffer,
-//         0,
-//         NULL
-//     );
-
-//     std::string message(messageBuffer ? messageBuffer : "Unknown error");
-//     LocalFree(messageBuffer);
-
-//     // Xóa ký tự newline thừa ở cuối mà FormatMessage thêm vào
-//     while (!message.empty() && (message.back() == '\n' || message.back() == '\r'))
-//         message.pop_back();
-
-//     return message;
-// }

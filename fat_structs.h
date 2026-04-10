@@ -5,17 +5,15 @@
 #include <vector>
 #include "Scheduler/model.h"
 
-// // ============================================================
-// // fat_structs.h
-// // Chứa toàn bộ struct dùng chung giữa Dev A và Dev B.
-// // Không chứa bất kỳ logic hay hàm nào - chỉ định nghĩa kiểu dữ liệu.
-// // Cả hai Dev đều #include file này.
-// // ============================================================
+// ============================================================
+// fat_structs.h
+// Không chứa bất kỳ logic hay hàm nào - chỉ định nghĩa kiểu dữ liệu.
+// ============================================================
 
 
-// // ------------------------------------------------------------
-// // Thông tin Boot Sector - Dev A parse, Dev B đọc để tính offset
-// // ------------------------------------------------------------
+// ------------------------------------------------------------
+// Thông tin Boot Sector
+// ------------------------------------------------------------
 struct BootSector {
     uint16_t bytesPerSector;       // Số byte mỗi sector (thường là 512)
     uint8_t  sectorsPerCluster;    // Số sector mỗi cluster (thường là 8 hoặc 16)
@@ -35,7 +33,6 @@ struct BootSector {
 
 // ------------------------------------------------------------
 // Thông tin một entry trong bảng thư mục (Directory Entry)
-// Dev B dùng để liệt kê file và lấy thông tin file
 // ------------------------------------------------------------
 struct DirEntry {
     char     name[9];              // Tên file 8.3, phần tên (null-terminated)
@@ -45,13 +42,12 @@ struct DirEntry {
     uint32_t fileSize;             // Kích thước file tính bằng byte (0 nếu là thư mục)
     uint16_t creationTime;         // Thời gian tạo (packed: 5b giờ, 6b phút, 5b giây/2)
     uint16_t creationDate;         // Ngày tạo (packed: 7b năm từ 1980, 4b tháng, 5b ngày)
-    std::string fullPath;          // Đường dẫn đầy đủ từ root (do Dev B điền khi duyệt)
+    std::string fullPath;          // Đường dẫn đầy đủ từ root
 };
 
 
 // ------------------------------------------------------------
 // Thông tin hiển thị của một file .txt được chọn - Chức năng 3
-// Dev B tạo ra, GUI hiển thị
 // ------------------------------------------------------------
 struct FileInfo {
     std::string name;              // Tên file đầy đủ (ví dụ: SCHEDULE.TXT)
@@ -66,48 +62,6 @@ struct FileInfo {
     std::vector<SchedulingQueue> queues;    // danh sach hang doi
     std::vector<Process>         processes; // danh sach tien trinh
 };
-
-
-// // ------------------------------------------------------------
-// // Thông tin một tiến trình - Dev B parse từ file .txt
-// // Dev A dùng để chạy thuật toán lập lịch
-// // ------------------------------------------------------------
-
-
-
-// // ------------------------------------------------------------
-// // Một slot trong timeline Gantt Chart - Dev A tạo ra
-// // Mỗi slot = một đoạn CPU chạy tiến trình pid từ start đến end
-// // ------------------------------------------------------------
-// struct GanttSlot {
-//     int pid;                       // Tiến trình đang chạy (-1 nếu CPU rảnh)
-//     int startTime;                 // Thời điểm bắt đầu slot này
-//     int endTime;                   // Thời điểm kết thúc slot này
-// };
-
-
-// // ------------------------------------------------------------
-// // Kết quả lập lịch của một tiến trình - Dev A tính toán
-// // ------------------------------------------------------------
-// struct ProcessResult {
-//     int pid;                       // Process ID
-//     int completionTime;            // Thời điểm tiến trình hoàn thành
-//     int turnaroundTime;            // = completionTime - arrivalTime
-//     int waitingTime;               // = turnaroundTime - burstTime
-// };
-
-
-// // ------------------------------------------------------------
-// // Toàn bộ kết quả của một lần chạy thuật toán lập lịch
-// // Dev A trả về, GUI nhận để hiển thị Gantt Chart + bảng kết quả
-// // ------------------------------------------------------------
-// struct ScheduleResult {
-//     std::vector<GanttSlot>     timeline;   // Danh sách các slot theo thứ tự thời gian
-//     std::vector<ProcessResult> results;    // Kết quả từng tiến trình
-//     double avgTurnaroundTime;              // Trung bình Turnaround Time
-//     double avgWaitingTime;                 // Trung bình Waiting Time
-// };
-
 
 // ------------------------------------------------------------
 // Hằng số thuộc tính Directory Entry
