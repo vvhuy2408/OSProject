@@ -5,6 +5,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <stdio.h>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
 
 static SDL_Window*   gWindow   = nullptr;
 static SDL_GLContext gGLContext = nullptr;
@@ -147,7 +150,7 @@ void runGUI(const std::string&           devicePath,
                 ImGui::Text("Danh sach tien trinh (%zu):", f.processes.size());
                 ImGui::Spacing();
 
-                if (ImGui::BeginTable("proc_table", 6,
+                if (ImGui::BeginTable("proc_table", 5,
                         ImGuiTableFlags_Borders      |
                         ImGuiTableFlags_RowBg        |
                         ImGuiTableFlags_ScrollY      |
@@ -159,7 +162,6 @@ void runGUI(const std::string&           devicePath,
                     ImGui::TableSetupColumn("Process ID");
                     ImGui::TableSetupColumn("Arrival Time");
                     ImGui::TableSetupColumn("CPU Burst Time");
-                    ImGui::TableSetupColumn("Priority");
                     ImGui::TableSetupColumn("Queue ID");
                     ImGui::TableSetupColumn("Time Slice");
                     ImGui::TableHeadersRow();
@@ -187,12 +189,9 @@ void runGUI(const std::string&           devicePath,
                         ImGui::Text("%d", p.burstTime);
 
                         ImGui::TableSetColumnIndex(3);
-                        ImGui::Text("%d", p.priority);
-
-                        ImGui::TableSetColumnIndex(4);
                         ImGui::Text("Q%d", p.curQueueID);
 
-                        ImGui::TableSetColumnIndex(5);
+                        ImGui::TableSetColumnIndex(4);
                         if (q) ImGui::Text("%d", q->timeSlice);
                         else   ImGui::TextDisabled("-");
                     }
@@ -232,6 +231,131 @@ void runGUI(const std::string&           devicePath,
 
                     ImGui::EndTable();
                 }
+
+                // ================= GANTT CHART =================
+                ImGui::Separator();
+                ImGui::Text("Gantt Chart:");
+
+                // Lay timeline tu file duoc chon
+                const std::vector<Segment>& tl = (selectedFile >= 0 && selectedFile < (int)files.size())
+                                                  ? files[selectedFile].timeline
+                                                  : std::vector<Segment>();
+
+                if (!tl.empty()) {
+                    if (ImGui::BeginTable("gantt_chart_table", 3,
+                            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
+                            ImGuiTableFlags_ScrollY,
+                            ImVec2(0, 250))) {
+
+                        ImGui::TableSetupScrollFreeze(0, 1);
+                        ImGui::TableSetupColumn("Start - End");
+                        ImGui::TableSetupColumn("Queue");
+                        ImGui::TableSetupColumn("Process");
+                        ImGui::TableHeadersRow();
+
+                        for (auto& seg : tl) {
+                            ImGui::TableNextRow();
+                            
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Text("%d - %d", seg.start, seg.end);
+                            
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::Text("%s", seg.qID.c_str());
+                            
+                            ImGui::TableSetColumnIndex(2);
+                            ImGui::Text("%s", seg.pID.c_str());
+                        }
+
+                        ImGui::EndTable();
+                    }
+                } else {
+                    ImGui::TextDisabled("Khong co du lieu timeline.");
+                }
+
+                ImGui::Separator();
+                ImGui::Text("Turnaround & Waiting Time:");
+
+                if (ImGui::BeginTable("tat_wt_table", 6,
+                        ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+
+                    ImGui::TableSetupColumn("Process");
+                    ImGui::TableSetupColumn("Arrival");
+                    ImGui::TableSetupColumn("Burst");
+                    ImGui::TableSetupColumn("Completion Time");
+                    ImGui::TableSetupColumn("Turnaround Time");
+                    ImGui::TableSetupColumn("Waiting Time");
+                    ImGui::TableHeadersRow();
+                    
+                    auto getCompletionTime = [&](const std::string& pid) -> int {
+                        int completion = -1;
+
+                        for (const auto& seg : tl) {
+                            if (seg.pID == pid) {
+                                completion = std::max(completion, seg.end);
+                            }
+                        }
+
+                        return completion;
+                    };
+
+                    double totalTAT = 0, totalWT = 0;
+                    int processCount = 0;
+
+                    for (auto& p : f.processes) {
+                        int completionTime = getCompletionTime(p.pID);
+
+                        int tat = 0;
+                        int wt  = 0;
+
+                        if (completionTime != -1) {
+                            tat = completionTime - p.arrivalTime;
+                            wt  = tat - p.burstTime;
+                            totalTAT += tat;
+                            totalWT += wt;
+                            processCount++;
+                        }
+
+                        ImGui::TableNextRow();
+
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%s", p.pID.c_str());
+
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%d", p.arrivalTime);
+
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("%d", p.burstTime);
+
+                        ImGui::TableSetColumnIndex(3);
+                        ImGui::Text("%d", completionTime);
+
+                        ImGui::TableSetColumnIndex(4);
+                        ImGui::Text("%d", tat);
+
+                        ImGui::TableSetColumnIndex(5);
+                        ImGui::Text("%d", wt);
+                    }
+
+                    // Average row
+                    if (processCount > 0) {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("Average");
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::TextDisabled("-");
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::TextDisabled("-");
+                        ImGui::TableSetColumnIndex(3);
+                        ImGui::TextDisabled("-");
+                        ImGui::TableSetColumnIndex(4);
+                        ImGui::Text("%.2f", totalTAT / processCount);
+                        ImGui::TableSetColumnIndex(5);
+                        ImGui::Text("%.2f", totalWT / processCount);
+                    }
+
+                    ImGui::EndTable();
+                }
+
             }
         } else {
             ImGui::TextDisabled("Chon mot file ben trai de xem chi tiet...");

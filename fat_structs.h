@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "Scheduler/model.h"
+#include "Scheduler/scheduler.h"
 
 // ============================================================
 // fat_structs.h
@@ -43,6 +44,7 @@ struct DirEntry {
     uint16_t creationTime;         // Thời gian tạo (packed: 5b giờ, 6b phút, 5b giây/2)
     uint16_t creationDate;         // Ngày tạo (packed: 7b năm từ 1980, 4b tháng, 5b ngày)
     std::string fullPath;          // Đường dẫn đầy đủ từ root
+    std::string lfnName;
 };
 
 
@@ -61,6 +63,7 @@ struct FileInfo {
     int         creationSecond;    // Giây tạo file (0-58, bội số của 2)
     std::vector<SchedulingQueue> queues;    // danh sach hang doi
     std::vector<Process>         processes; // danh sach tien trinh
+    std::vector<Segment>         timeline;  // ket qua lap lich (Gantt Chart)
 };
 
 // ------------------------------------------------------------

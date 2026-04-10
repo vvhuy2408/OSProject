@@ -8,7 +8,7 @@
 #include "file_reader.h"
 #include "Scheduler/parser.h"
 #include "GUI/gui.h"
-// #include "scheduler.h"
+#include "Scheduler/scheduler.h"
 #include "Scheduler/model.h"
 // // ============================================================
 // // main.cpp
@@ -263,6 +263,73 @@ int main(int argc, char* argv[]) {
         fileInfoList.push_back(fi);
     }
 
+    // ========================================
+    // PHASE DEV A: Chay Scheduler cho moi file
+    // ========================================
+    printf("\n========================================\n");
+    printf("     PHASE DEV A - CHAY SCHEDULER\n");
+    printf("========================================\n");
+
+    for (size_t fileIdx = 0; fileIdx < fileInfoList.size(); fileIdx++) {
+        FileInfo& fileInfo = fileInfoList[fileIdx];
+        
+        printf("\n[File %zu] %s\n", fileIdx + 1, fileInfo.name.c_str());
+        printf("------------------------------------------\n");
+
+        // Kiem tra dieu kien
+        if (fileInfo.processes.empty()) {
+            printf("  Khong co tien trinh, bo qua.\n");
+            continue;
+        }
+        if (fileInfo.queues.empty()) {
+            printf("  Khong co hang doi, bo qua.\n");
+            continue;
+        }
+
+        printf("  Tien trinh: %zu, Hang doi: %zu\n",
+            fileInfo.processes.size(), fileInfo.queues.size());
+
+        // Tao Scheduler va chay
+        Scheduler scheduler(fileInfo.processes, fileInfo.queues);
+        scheduler.execute();
+
+        // Lay timeline va luu vao FileInfo
+        fileInfo.timeline = scheduler.getTimeline();
+        fileInfo.processes = scheduler.getProcesses();
+
+        // In ket qua ra terminal
+        printf("\n  === Gantt Chart Timeline ===\n  ");
+        for (const auto& seg : fileInfo.timeline) {
+            printf("[%s:%d-%d] ", seg.pID.c_str(), seg.start, seg.end);
+        }
+        printf("\n");
+
+        // In bang thong tin chi tiet
+        printf("\n  === Chi tiet tien trinh (TAT, WT) ===\n");
+        printf("  %-6s %-12s %-15s %-12s\n",
+               "PID", "Completion", "Turnaround", "Waiting");
+        printf("  %s\n", std::string(50, '-').c_str());
+
+        double totalTAT = 0, totalWT = 0;
+        for (const auto& p : fileInfo.processes) {
+            printf("  %-6s %-12d %-15d %-12d\n",
+                   p.pID.c_str(), p.completionTime,
+                   p.turnaroundTime, p.waitingTime);
+            totalTAT += p.turnaroundTime;
+            totalWT += p.waitingTime;
+        }
+
+        double avgTAT = totalTAT / fileInfo.processes.size();
+        double avgWT = totalWT / fileInfo.processes.size();
+        printf("  %s\n", std::string(50, '-').c_str());
+        printf("  Average Turnaround Time: %.2f\n", avgTAT);
+        printf("  Average Waiting Time   : %.2f\n", avgWT);
+    }
+
+    printf("\n========================================\n");
+    printf("     Hoan tat phase Scheduler\n");
+    printf("========================================\n\n");
+
     // --- CHUC NANG 3: Hien thi thong tin chi tiet file dau tien ---
     if (!txtFiles.empty()) {
         printf("\n=== [CF3] Thong tin chi tiet file: %s ===\n",
@@ -375,7 +442,6 @@ int main(int argc, char* argv[]) {
     // Don dep
     cleanupGUI();
     closeDevice(handle);
-    return 0;
     return 0;
 }
 

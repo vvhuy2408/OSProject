@@ -2,8 +2,6 @@
 #define scheduler_h
 #include "model.h"
 
-using namespace std;
-
 // represents a single execution segment in the gantt chart
 struct Segment {
     int start;
@@ -16,9 +14,9 @@ class Scheduler {
 private:
     int time = 0;
 
-    vector<Process> procs;
-    vector<SchedulingQueue> queuesList;
-    vector<Segment> timeline;
+    std::vector<Process> procs;
+    std::vector<SchedulingQueue> queuesList;
+    std::vector<Segment> timeline;
 
     Process* runningProc = nullptr;        // currently running process
     SchedulingQueue* runningQueue = nullptr; // queue that owns the running process
@@ -30,8 +28,8 @@ private:
     SchedulingQueue* getQueue(int id);
 
     Process* selectProcess(SchedulingQueue& q);
-    Process* selectSJF(vector<Process*>& q);
-    Process* selectSRTN(vector<Process*>& q);
+    Process* selectSJF(std::vector<Process*>& q);
+    Process* selectSRTN(std::vector<Process*>& q);
     void handleSRTNPreempt();
 
     void runTimeUnit();
@@ -40,9 +38,10 @@ private:
     void pushTimeline(int start, int end, Process* p, SchedulingQueue* q);
 
 public:
-    Scheduler(vector<Process> p, vector<SchedulingQueue> q);
+    Scheduler(std::vector<Process> p, std::vector<SchedulingQueue> q);
     void execute();
-    vector<Process> getProcesses() { return procs; }
-    vector<Segment> getTimeline() { return timeline; }
+    std::vector<Process> getProcesses() { return procs; }
+    std::vector<Segment> getTimeline() { return timeline; }
+    int getCompletionTime(const std::string& pid) const;
 };
 #endif

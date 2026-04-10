@@ -108,7 +108,12 @@ bool readFileContent(DeviceHandle handle,
 
 
 void buildFileInfo(const DirEntry& entry, FileInfo& out) {
-    out.name     = std::string(entry.name) + "." + std::string(entry.ext);
+    // Neu co ten LFN thi dung, khong thi dung ten 8.3
+    if (!entry.lfnName.empty())
+        out.name = entry.lfnName;
+    else
+        out.name = std::string(entry.name) + "." + std::string(entry.ext);
+        
     out.fullPath = entry.fullPath;
     out.fileSize = entry.fileSize;
 

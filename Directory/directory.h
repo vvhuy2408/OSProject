@@ -8,6 +8,8 @@
 // Duyệt đệ quy toàn bộ thư mục, tìm file *.txt.
 // ============================================================
 
+static std::string extractLFNChars(const uint8_t* raw);
+std::string parseLFN(const std::vector<std::vector<uint8_t>>& lfnEntries);
 
 // ------------------------------------------------------------
 // Liệt kê tất cả file *.txt trên toàn thiết bị (kể cả thư mục con)

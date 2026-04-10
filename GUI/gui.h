@@ -1,5 +1,6 @@
 #pragma once
 #include "fat_structs.h"
+#include "Scheduler/scheduler.h" // dùng cho segment
 #include <vector>
 #include <string>
 

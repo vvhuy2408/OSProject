@@ -144,8 +144,16 @@ void printBootSector(const BootSector& boot) {
     // if (boot.rootCluster == 2) printf("[OK - standard]\n");
     // else printf("[OK]\n");
 
-    // sectorsPerRDET = clusterCount × sectorsPerCluster
-    // printf("Number of sectors for the RDET                : %u (0x%08X)\n", sectorsPerRDET, sectorsPerRDET);
+    // Root Directory Entry Table (RDET) - cluster chain từ rootCluster
+    // Mỗi directory entry = 32 bytes
+    // Số entries tối đa trên 1 sector = bytesPerSector / 32
+    uint32_t entriesPerSector = boot.bytesPerSector / 32;
+    uint32_t entriesPerCluster = entriesPerSector * boot.sectorsPerCluster;
+    // Số sector tối thiểu = 1 cluster (để tính chính xác cần scan FAT từ rootCluster)
+    uint32_t SectorsPerRDET = boot.sectorsPerCluster;
+    printf("Entries per Sector                            : %u\n", entriesPerSector);
+    printf("Entries per Cluster                           : %u\n", entriesPerCluster);
+    printf("Number of sectors for the RDET                : %u (0x%08X)\n", SectorsPerRDET, SectorsPerRDET);
 
     printf("\n----- TOTAL CAPACITY -----\n");
     printf("Total number of sectors on the disk           : %u (0x%08X)\n", boot.totalSectors32, boot.totalSectors32);
