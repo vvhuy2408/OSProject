@@ -5,6 +5,40 @@
 // directory.cpp - Dev B implement
 // ============================================================
 
+// Moi entry LFN chua 13 ky tu Unicode (UTF-16LE) tai 3 vi tri:
+// offset  1: 5 ky tu (10 byte)
+// offset 14: 6 ky tu (12 byte)
+// offset 28: 2 ky tu  (4 byte)
+// Tong 13 ky tu, chi lay byte chan (byte le la 0x00 voi ASCII)
+static std::string extractLFNChars(const uint8_t* raw) {
+    std::string result;
+    int offsets[] = {1, 14, 28};
+    int counts[]  = {5,  6,  2};
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < counts[i]; j++) {
+            uint16_t ch;
+            memcpy(&ch, raw + offsets[i] + j * 2, 2);
+            if (ch == 0x0000 || ch == 0xFFFF) return result; // het ten
+            // Chi xu ly ASCII (ch < 128), bo qua ky tu Unicode phuc tap
+            if (ch < 128) result += (char)ch;
+            else          result += '?'; // ky tu ngoai ASCII
+        }
+    }
+    return result;
+}
+
+// Nhan vao danh sach cac entry LFN (theo thu tu nguoc tu FAT32)
+// Tra ve ten day du da ghep lai theo thu tu dung
+std::string parseLFN(const std::vector<std::vector<uint8_t>>& lfnEntries) {
+    // lfnEntries[0] la entry LFN cuoi cung duoc doc (so thu tu nho nhat)
+    // Can dao nguoc lai de ghep ten dung thu tu
+    std::string fullName;
+    for (int i = (int)lfnEntries.size() - 1; i >= 0; i--) {
+        fullName += extractLFNChars(lfnEntries[i].data());
+    }
+    return fullName;
+}
 
 void listAllTxtFiles(DeviceHandle handle,
                      const BootSector& boot,
@@ -32,27 +66,47 @@ void scanDirectory(DeviceHandle handle,
             break; // Đọc thất bại, dừng duyệt thư mục này
         }
 
+        // Buffer gom cac entry LFN lien tiep
+        std::vector<std::vector<uint8_t>> lfnBuffer;
+
         for (const auto& rawEntry : rawEntries) {
             // Byte đầu tiên = 0x00: hết entry, không còn gì sau đó
             if (rawEntry[0] == ENTRY_FREE) break;
 
             // Byte đầu tiên = 0xE5: entry đã xóa, bỏ qua
-            if (rawEntry[0] == (uint8_t)ENTRY_DELETED) continue;
-
-            // Bỏ qua Long File Name entry (attribute = 0x0F)
-            if (rawEntry[11] == ATTR_LFN) continue;
-
-            DirEntry entry;
-            if (!parseDirectoryEntry(rawEntry.data(), currentPath, entry)) {
+            if (rawEntry[0] == (uint8_t)ENTRY_DELETED) {
+                lfnBuffer.clear(); // entry bi xoa, bo LFN da gom
                 continue;
             }
 
+            // Bỏ qua Long File Name entry (attribute = 0x0F)
+            if (rawEntry[11] == ATTR_LFN) {
+                // Day la entry LFN, gom vao buffer
+                lfnBuffer.push_back(rawEntry);
+                continue;
+            }
+
+            DirEntry entry;
+            if (!parseDirectoryEntry(rawEntry.data(), currentPath, entry)) {
+                lfnBuffer.clear();
+                continue;
+            }
+            
+            // Neu co LFN thi dung ten LFN thay vi ten 8.3
+            if (!lfnBuffer.empty()) {
+                entry.lfnName = parseLFN(lfnBuffer);
+                // Cap nhat lai fullPath voi ten day du
+                entry.fullPath = currentPath + entry.lfnName;
+                lfnBuffer.clear();
+            }
+
             if (isTxtFile(entry)) {
-                // Thêm file .txt vào kết quả
                 result.push_back(entry);
             } else if (isSubDirectory(entry)) {
-                // Đệ quy vào thư mục con
-                std::string subPath = currentPath + std::string(entry.name) + "/";
+                std::string subPath = currentPath
+                    + (!entry.lfnName.empty() ? entry.lfnName
+                                              : std::string(entry.name))
+                    + "/";
                 scanDirectory(handle, boot, fatTable,
                               entry.firstCluster, subPath, result);
             }

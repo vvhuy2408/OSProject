@@ -1,5 +1,6 @@
 #include "scheduler.h"
 #include <algorithm>
+using namespace std;
 
 Scheduler::Scheduler(vector<Process> p, vector<SchedulingQueue> q)
     : procs(p), queuesList(q) {}
@@ -14,7 +15,7 @@ bool Scheduler::isFinished() {
 // add newly arrived processes to their queue
 void Scheduler::arrivalCheck() {
     for (auto& p : procs) {
-        if (p.arrivalTime == time && !p.completed && p.startTime == -1) {
+        if (p.arrivalTime == time && !p.completed) {
             SchedulingQueue* q = getQueue(p.curQueueID);
             if (q) q->readyList.push_back(&p);
         }
@@ -131,7 +132,7 @@ void Scheduler::quantumCheck() {
 
     queueQuantumUsed++;
 
-    if (queueQuantumUsed >= runningQueue->timeSlice) {
+    if (runningQueue->timeSlice > 0 && queueQuantumUsed >= runningQueue->timeSlice) {
         // put process back if not done
         if (runningProc != nullptr && runningProc->remainingTime > 0) {
             runningQueue->readyList.push_back(runningProc);
@@ -145,10 +146,23 @@ void Scheduler::quantumCheck() {
 }
 
 void Scheduler::pushTimeline(int start, int end, Process* p, SchedulingQueue* q) {
-    if (p)
-        timeline.push_back({start, end, q->qID, p->pID});
-    else
-        timeline.push_back({start, end, "IDLE", "IDLE"});
+    // if (p)
+    //     timeline.push_back({start, end, q->qID, p->pID});
+    // else
+    //     timeline.push_back({start, end, "IDLE", "IDLE"});
+    
+    std::string pid = p ? p->pID : "IDLE";
+    std::string qid = q ? q->qID : "IDLE";
+
+    if (!timeline.empty()) {
+        Segment& last = timeline.back();
+        if (last.pID == pid && last.qID == qid) {
+            last.end = end;
+            return;
+        }
+    }
+
+    timeline.push_back({start, end, qid, pid});
 }
 
 // main loop
@@ -161,4 +175,19 @@ void Scheduler::execute() {
         quantumCheck();
         time++;
     }
+
+    for (auto& p : procs) {
+        p.turnaroundTime = p.completionTime - p.arrivalTime;
+        p.waitingTime = p.turnaroundTime - p.burstTime;
+    }
+}
+
+int Scheduler::getCompletionTime(const std::string& pid) const {
+    int completionTime = -1;
+    for (const auto& seg : timeline) {
+        if (seg.pID == pid) {
+            completionTime = seg.end;
+        }
+    }
+    return completionTime;
 }

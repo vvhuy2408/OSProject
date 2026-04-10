@@ -7,7 +7,8 @@
 #include "directory.h"
 #include "file_reader.h"
 #include "Scheduler/parser.h"
-// #include "scheduler.h"
+#include "GUI/gui.h"
+#include "Scheduler/scheduler.h"
 #include "Scheduler/model.h"
 // // ============================================================
 // // main.cpp
@@ -238,6 +239,97 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    // Convert DirEntry sang FileInfo de truyen vao GUI
+    std::vector<FileInfo> fileInfoList;
+    for (auto& entry : txtFiles) {
+        FileInfo fi;
+        buildFileInfo(entry, fi);
+
+        // Doc noi dung va parse tien trinh cho tung file
+        std::string content;
+        bool readOk = readFileContent(handle, boot, fatTable,
+                                    entry.firstCluster,
+                                    entry.fileSize,
+                                    content);
+        if (readOk && !content.empty()) {
+            std::vector<SchedulingQueue> qList;
+            std::vector<Process> pList;
+            Parser parser;
+            parser.parseFromString(content, qList, pList);
+            fi.queues    = qList;
+            fi.processes = pList;
+        }
+
+        fileInfoList.push_back(fi);
+    }
+
+    // ========================================
+    // PHASE DEV A: Chay Scheduler cho moi file
+    // ========================================
+    printf("\n========================================\n");
+    printf("     PHASE DEV A - CHAY SCHEDULER\n");
+    printf("========================================\n");
+
+    for (size_t fileIdx = 0; fileIdx < fileInfoList.size(); fileIdx++) {
+        FileInfo& fileInfo = fileInfoList[fileIdx];
+        
+        printf("\n[File %zu] %s\n", fileIdx + 1, fileInfo.name.c_str());
+        printf("------------------------------------------\n");
+
+        // Kiem tra dieu kien
+        if (fileInfo.processes.empty()) {
+            printf("  Khong co tien trinh, bo qua.\n");
+            continue;
+        }
+        if (fileInfo.queues.empty()) {
+            printf("  Khong co hang doi, bo qua.\n");
+            continue;
+        }
+
+        printf("  Tien trinh: %zu, Hang doi: %zu\n",
+            fileInfo.processes.size(), fileInfo.queues.size());
+
+        // Tao Scheduler va chay
+        Scheduler scheduler(fileInfo.processes, fileInfo.queues);
+        scheduler.execute();
+
+        // Lay timeline va luu vao FileInfo
+        fileInfo.timeline = scheduler.getTimeline();
+        fileInfo.processes = scheduler.getProcesses();
+
+        // In ket qua ra terminal
+        printf("\n  === Gantt Chart Timeline ===\n  ");
+        for (const auto& seg : fileInfo.timeline) {
+            printf("[%s:%d-%d] ", seg.pID.c_str(), seg.start, seg.end);
+        }
+        printf("\n");
+
+        // In bang thong tin chi tiet
+        printf("\n  === Chi tiet tien trinh (TAT, WT) ===\n");
+        printf("  %-6s %-12s %-15s %-12s\n",
+               "PID", "Completion", "Turnaround", "Waiting");
+        printf("  %s\n", std::string(50, '-').c_str());
+
+        double totalTAT = 0, totalWT = 0;
+        for (const auto& p : fileInfo.processes) {
+            printf("  %-6s %-12d %-15d %-12d\n",
+                   p.pID.c_str(), p.completionTime,
+                   p.turnaroundTime, p.waitingTime);
+            totalTAT += p.turnaroundTime;
+            totalWT += p.waitingTime;
+        }
+
+        double avgTAT = totalTAT / fileInfo.processes.size();
+        double avgWT = totalWT / fileInfo.processes.size();
+        printf("  %s\n", std::string(50, '-').c_str());
+        printf("  Average Turnaround Time: %.2f\n", avgTAT);
+        printf("  Average Waiting Time   : %.2f\n", avgWT);
+    }
+
+    printf("\n========================================\n");
+    printf("     Hoan tat phase Scheduler\n");
+    printf("========================================\n\n");
+
     // --- CHUC NANG 3: Hien thi thong tin chi tiet file dau tien ---
     if (!txtFiles.empty()) {
         printf("\n=== [CF3] Thong tin chi tiet file: %s ===\n",
@@ -296,7 +388,15 @@ int main(int argc, char* argv[]) {
             // parse input file
             Parser parser;
             parser.parseFromString(content, qList, pList);
-
+            
+            if (!fileInfoList.empty()) {
+                std::vector<SchedulingQueue> qList;
+                std::vector<Process> pList;
+                Parser parser;
+                parser.parseFromString(content, qList, pList);
+                fileInfoList[0].queues    = qList;
+                fileInfoList[0].processes = pList;
+            }
             if (pList.empty()) {
                 printf("Khong parse duoc tien trinh nao.\n");
                 printf("  -> Kiem tra dinh dang file: dong dau co phai header khong,\n");
@@ -329,10 +429,19 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // 4. Đóng thiết bị
-    closeDevice(handle);
+    // Khoi dong GUI
+    if (!initGUI()) {
+        printf("THAT BAI: Khong khoi dong duoc GUI.\n");
+        closeDevice(handle);
+        return 1;
+    }
 
-    printf("\n=== DONE ===\n");
+    // Chay GUI - ham nay block den khi nguoi dung dong cua so
+    runGUI(std::string(devicePath), boot, fileInfoList);
+
+    // Don dep
+    cleanupGUI();
+    closeDevice(handle);
     return 0;
 }
 
