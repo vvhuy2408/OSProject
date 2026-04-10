@@ -5,8 +5,7 @@
 
 // ============================================================
 // directory.h / directory.cpp
-// TRÁCH NHIỆM: Dev B
-// Chức năng 2: Duyệt đệ quy toàn bộ thư mục, tìm file *.txt.
+// Duyệt đệ quy toàn bộ thư mục, tìm file *.txt.
 // ============================================================
 
 
@@ -17,10 +16,6 @@
 // boot:     struct BootSector đã parse
 // fatTable: bảng FAT đã nạp vào bộ nhớ
 // result:   vector sẽ chứa thông tin các file .txt tìm được
-//
-// Hàm này là entry point cho Chức năng 2.
-// Nội bộ nó gọi scanDirectory() bắt đầu từ rootCluster.
-// GUI gọi hàm này sau khi mở thiết bị và nạp FAT.
 // ------------------------------------------------------------
 void listAllTxtFiles(DeviceHandle handle,
                      const BootSector& boot,
@@ -38,9 +33,6 @@ void listAllTxtFiles(DeviceHandle handle,
 // currentPath:  đường dẫn hiện tại (để điền vào DirEntry.fullPath)
 //               ví dụ: "/", "/DOCS/", "/DOCS/SCHOOL/"
 // result:       danh sách file .txt tìm được (thêm vào, không ghi đè)
-//
-// Hàm này gọi đệ quy chính mình khi gặp thư mục con.
-// Bỏ qua entry "." và ".." để tránh đệ quy vô tận.
 // ------------------------------------------------------------
 void scanDirectory(DeviceHandle handle,
                    const BootSector& boot,
@@ -59,9 +51,6 @@ void scanDirectory(DeviceHandle handle,
 // entriesOut:    vector nhận các entry raw (mỗi entry là mảng 32 byte)
 //
 // Trả về: true nếu đọc thành công
-//
-// Mỗi entry thư mục có kích thước cố định 32 byte.
-// Một cluster chứa (bytesPerSector * sectorsPerCluster / 32) entry.
 // ------------------------------------------------------------
 bool readDirectoryCluster(DeviceHandle handle,
                           const BootSector& boot,
@@ -77,9 +66,6 @@ bool readDirectoryCluster(DeviceHandle handle,
 // out:         struct DirEntry sẽ được điền dữ liệu
 //
 // Trả về: true nếu entry hợp lệ (không phải entry trống hoặc đã xóa)
-//
-// Hàm này không phân biệt file hay thư mục - caller tự kiểm tra
-// thuộc tính ATTR_DIRECTORY trong out.attributes sau khi gọi.
 // ------------------------------------------------------------
 bool parseDirectoryEntry(const uint8_t* rawEntry,
                          const std::string& currentPath,

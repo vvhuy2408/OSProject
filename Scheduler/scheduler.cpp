@@ -84,7 +84,7 @@ void Scheduler::runTimeUnit() {
     pushTimeline(start, time + 1, runningProc, runningQueue);
 }
 
-// pick shortest job in queue
+// pick shortest job in queue (SJF)
 Process* Scheduler::selectSJF(vector<Process*>& q) {
     if (q.empty()) return nullptr;
 
@@ -96,6 +96,7 @@ Process* Scheduler::selectSJF(vector<Process*>& q) {
     return q[idx];
 }
 
+// SRTN
 Process* Scheduler::selectSRTN(vector<Process*>& q) {
     return selectSJF(q);
 }
@@ -125,7 +126,7 @@ void Scheduler::handleSRTNPreempt() {
     }
 }
 
-// check if quantum expired, if so move to next queue
+// check if quantum expired, if so move to next queue (RR)
 void Scheduler::quantumCheck() {
     if (!runningQueue) return;
 

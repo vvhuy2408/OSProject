@@ -2,9 +2,9 @@
 #include <cstring>
 #include <cstdio>
 
-// // ============================================================
-// // boot_sector.cpp - Dev A implement
-// // ============================================================
+// ============================================================
+// boot_sector.cpp
+// ============================================================
 
 static uint16_t readUInt16(const unsigned char* buf, int offset) {
     return (uint16_t)buf[offset] | ((uint16_t)buf[offset + 1] << 8);
@@ -32,8 +32,7 @@ bool isValidFAT32(const uint8_t* buffer) {
     if (sectorsPerCluster == 0 || (sectorsPerCluster & (sectorsPerCluster - 1)) != 0) {
         return false;
     }
-
-    // TODO: Có thể thêm kiểm tra chữ ký "FAT32   " tại offset 82 nếu cần
+    
     return true;
 }
 

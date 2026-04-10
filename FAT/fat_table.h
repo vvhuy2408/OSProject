@@ -2,8 +2,6 @@
 #include "fat_structs.h"
 #include "device.h"
 // ============================================================
-// fat_table.h / fat_table.cpp
-// TRÁCH NHIỆM: Dev B
 // Đọc bảng FAT vào bộ nhớ và tra cứu cluster tiếp theo.
 // Đây là nền tảng của mọi thao tác đọc file và thư mục.
 // ============================================================
@@ -22,9 +20,6 @@
 // Sau khi gọi hàm này:
 //   fatOut[N] & FAT32_MASK = cluster tiếp theo sau cluster N
 //   Nếu kết quả >= FAT32_EOC thì cluster N là cuối chuỗi
-//
-// Lưu ý: Bảng FAT số 1 bắt đầu tại sector reservedSectors.
-//        Dev B đọc FAT 1, không cần đọc FAT 2 (FAT 2 là bản sao dự phòng).
 // ------------------------------------------------------------
 bool loadFATTable(DeviceHandle handle, const BootSector& boot,
                   std::vector<uint32_t>& fatOut);
@@ -39,13 +34,6 @@ bool loadFATTable(DeviceHandle handle, const BootSector& boot,
 // Trả về: số cluster tiếp theo
 //         Nếu trả về >= FAT32_EOC (0x0FFFFFF8) thì đây là cluster cuối
 //         Nếu trả về 0 thì cluster đó đang trống (không nên xảy ra khi đọc file)
-//
-// Ví dụ cách dùng để duyệt cluster chain:
-//   uint32_t cluster = firstCluster;
-//   while (cluster < FAT32_EOC) {
-//       // đọc dữ liệu tại cluster
-//       cluster = getNextCluster(fatTable, cluster);
-//   }
 // ------------------------------------------------------------
 uint32_t getNextCluster(const std::vector<uint32_t>& fatTable, uint32_t clusterNum);
 
@@ -68,11 +56,5 @@ bool isEndOfChain(uint32_t clusterValue);
 //
 // Trả về: số thứ tự sector tuyệt đối trên thiết bị
 //
-// Công thức:
-//   firstDataSector = reservedSectors + (numFATs * fatSize32)
-//   sector = firstDataSector + (clusterNum - 2) * sectorsPerCluster
-//
-// Hàm này được đặt ở đây vì Dev B dùng nhiều nhất,
-// nhưng Dev A cũng có thể gọi nếu cần.
 // ------------------------------------------------------------
 uint64_t clusterToSector(uint32_t clusterNum, const BootSector& boot);
