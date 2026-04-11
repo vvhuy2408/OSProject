@@ -2,11 +2,11 @@
 #include "fat_table.h"
 
 // ============================================================
-// directory.cpp - Dev B implement
+// directory.cpp
 // ============================================================
 
 // Moi entry LFN chua 13 ky tu Unicode (UTF-16LE) tai 3 vi tri:
-// offset  1: 5 ky tu (10 byte)
+// offset 1: 5 ky tu (10 byte)
 // offset 14: 6 ky tu (12 byte)
 // offset 28: 2 ky tu  (4 byte)
 // Tong 13 ky tu, chi lay byte chan (byte le la 0x00 voi ASCII)
@@ -191,7 +191,7 @@ bool isTxtFile(const DirEntry& entry) {
     // Không phải thư mục
     if (entry.attributes & ATTR_DIRECTORY) return false;
 
-    // Phần mở rộng phải là "TXT"
+    // Phần mở rộng phải là txt
     return (strcmp(entry.ext, "TXT") == 0);
 }
 
@@ -200,7 +200,7 @@ bool isSubDirectory(const DirEntry& entry) {
     // Phải có attribute thư mục
     if (!(entry.attributes & ATTR_DIRECTORY)) return false;
 
-    // Bỏ qua "." và ".." để tránh đệ quy vô tận
+    // Bỏ qua "." và ".." tránh đệ quy vô tận
     if (strcmp(entry.name, ".") == 0)  return false;
     if (strcmp(entry.name, "..") == 0) return false;
 

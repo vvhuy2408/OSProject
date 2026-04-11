@@ -55,7 +55,7 @@ struct Process {
 
 struct SchedulingQueue {
     std::string qID;    // queue ID
-    std::string policy; // select: rr - sjf - srtn
+    std::string policy; // select: sjf - srtn
     int timeSlice;      // rr
 
     std::vector<Process*> readyList;

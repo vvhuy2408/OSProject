@@ -4,8 +4,6 @@
 
 // ============================================================
 // fat_table.cpp - Dev B implement
-// ============================================================
-
 
 bool loadFATTable(DeviceHandle handle, const BootSector& boot,
                   std::vector<uint32_t>& fatOut) {
@@ -40,7 +38,6 @@ uint32_t getNextCluster(const std::vector<uint32_t>& fatTable, uint32_t clusterN
     if (clusterNum < 2 || clusterNum >= fatTable.size()) {
         return 0x0FFFFFFF; // Trả về EOC để caller dừng vòng lặp
     }
-
     // Mask 4 bit cao: chỉ lấy 28 bit thấp là giá trị thực sự
     return fatTable[clusterNum] & FAT32_MASK;
 }
@@ -50,7 +47,6 @@ bool isEndOfChain(uint32_t clusterValue) {
     // Tất cả giá trị từ 0x0FFFFFF8 trở lên đều là end-of-chain
     return (clusterValue & FAT32_MASK) >= FAT32_EOC;
 }
-
 
 uint64_t clusterToSector(uint32_t clusterNum, const BootSector& boot) {
     // Sector đầu tiên của vùng dữ liệu
