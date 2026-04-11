@@ -47,6 +47,7 @@ struct DirEntry {
     uint16_t creationTime;         // Thời gian tạo (packed: 5b giờ, 6b phút, 5b giây/2)
     uint16_t creationDate;         // Ngày tạo (packed: 7b năm từ 1980, 4b tháng, 5b ngày)
     std::string fullPath;          // Đường dẫn đầy đủ từ root (do Dev B điền khi duyệt)
+    std::string lfnName;
 };
 
 
