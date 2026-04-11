@@ -147,11 +147,6 @@ void Scheduler::quantumCheck() {
 }
 
 void Scheduler::pushTimeline(int start, int end, Process* p, SchedulingQueue* q) {
-    // if (p)
-    //     timeline.push_back({start, end, q->qID, p->pID});
-    // else
-    //     timeline.push_back({start, end, "IDLE", "IDLE"});
-    
     std::string pid = p ? p->pID : "IDLE";
     std::string qid = q ? q->qID : "IDLE";
 

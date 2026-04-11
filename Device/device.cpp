@@ -7,10 +7,6 @@
 
 
 DeviceHandle openDevice(const char* path) {
-    // CreateFile với GENERIC_READ: chỉ đọc, không ghi
-    // FILE_SHARE_READ | FILE_SHARE_WRITE: cho phép Windows tiếp tục dùng ổ đĩa
-    //   (thiếu FILE_SHARE_WRITE thì Windows từ chối vì nó đang mount ổ đó)
-    // OPEN_EXISTING: thiết bị phải tồn tại sẵn, không tạo mới
     DeviceHandle handle = CreateFileA(
         path,
         GENERIC_READ,

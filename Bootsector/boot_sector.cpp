@@ -119,30 +119,17 @@ void printBootSector(const BootSector& boot) {
 
     printf("\n----- SECTOR & CLUSTER INFO -----\n");
     printf("Bytes per Sector                              : %u (0x%04X)\n", boot.bytesPerSector, boot.bytesPerSector);
-    // if (boot.bytesPerSector == 512) 
-    //     printf("[OK - standard]\n");
-    // else if (boot.bytesPerSector == 1024 || boot.bytesPerSector == 2048 || boot.bytesPerSector == 4096) 
-    //     printf("[OK]\n");
-    // else printf("[WARN - unusual]\n");
     printf("Sectors per Cluster                           : %u (0x%02X)\n", boot.sectorsPerCluster, boot.sectorsPerCluster);
-    // if (boot.sectorsPerCluster == 8 || boot.sectorsPerCluster == 16) 
-    //     printf("[OK - standard]\n");
-    // else printf("[OK - power of 2]\n");
     uint32_t bytesPerCluster = boot.bytesPerSector * boot.sectorsPerCluster;
     printf("Bytes per Cluster                             : %u (0x%08X)\n", bytesPerCluster, bytesPerCluster);
 
     printf("\n----- FAT & RESERVATION INFO -----\n");
     printf("Number of sectors in the Boot Sector region   : %u (0x%04X)\n", boot.reservedSectors, boot.reservedSectors);
     printf("Number of FAT tables                          : %u (0x%02X)\n", boot.numFATs, boot.numFATs);
-    // if (boot.numFATs == 2) 
-    //     printf("[OK - standard]\n");
-    // else printf("[OK]\n");
     printf("Number of sectors per FAT table               : %u (0x%08X)\n", boot.fatSize32, boot.fatSize32);
 
     printf("\n----- DIRECTORY & CLUSTER INFO -----\n");
     printf("Root Cluster                                  : %u (0x%08X)\n", boot.rootCluster, boot.rootCluster);
-    // if (boot.rootCluster == 2) printf("[OK - standard]\n");
-    // else printf("[OK]\n");
 
     // Root Directory Entry Table (RDET) - cluster chain từ rootCluster
     // Mỗi directory entry = 32 bytes
@@ -157,7 +144,7 @@ void printBootSector(const BootSector& boot) {
 
     printf("\n----- TOTAL CAPACITY -----\n");
     printf("Total number of sectors on the disk           : %u (0x%08X)\n", boot.totalSectors32, boot.totalSectors32);
-    // printf("FSInfo Sector      : %u (0x%04X)\n", boot.fsInfoSector, boot.fsInfoSector);
+    
     uint32_t firstDataSector = getFirstDataSector(boot);
     printf("First Data Sector                             : %u (0x%08X)\n", firstDataSector, firstDataSector);
     uint64_t totalBytes = (uint64_t)boot.totalSectors32 * boot.bytesPerSector;

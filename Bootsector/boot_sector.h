@@ -3,11 +3,10 @@
 #include "device.h"
 
 // ============================================================
-// boot_sector.h / boot_sector.cpp
 // Đọc và parse Boot Sector từ thiết bị raw.
 // ============================================================
 
-// helper function 
+// helper function
 static uint16_t readUInt16(const unsigned char* buf, int offset);
 static uint32_t readUInt32(const unsigned char* buf, int offset);
 
@@ -25,7 +24,6 @@ bool isValidFAT32(const uint8_t* buffer);
 // ------------------------------------------------------------
 // Đọc Boot Sector từ thiết bị và parse vào struct BootSector
 //
-// handle: handle trả về từ openDevice()
 // out:    con trỏ đến struct BootSector sẽ được điền dữ liệu
 //
 // Trả về: true nếu đọc và parse thành công
@@ -41,19 +39,14 @@ bool readBootSector(DeviceHandle handle, BootSector* out);
 // ------------------------------------------------------------
 bool parseBootSector(const uint8_t* buffer, BootSector* out);
 
-
 // ------------------------------------------------------------
 // Tính sector bắt đầu của vùng dữ liệu (Data Region)
 //
 // boot: struct BootSector đã parse xong
-//
 // Trả về: số thứ tự sector đầu tiên của vùng dữ liệu
 // ------------------------------------------------------------
 uint32_t getFirstDataSector(const BootSector& boot);
 
-
 // ------------------------------------------------------------
-// In thông tin Boot Sector ra stdout (dùng để debug terminal)
-// GUI sẽ có hàm hiển thị riêng, hàm này chỉ dùng khi test
-// ------------------------------------------------------------
+// In thong tin Boot Sector ra stdout (debug terminal)
 void printBootSector(const BootSector& boot);

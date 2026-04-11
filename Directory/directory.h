@@ -14,9 +14,6 @@ std::string parseLFN(const std::vector<std::vector<uint8_t>>& lfnEntries);
 // ------------------------------------------------------------
 // Liệt kê tất cả file *.txt trên toàn thiết bị (kể cả thư mục con)
 //
-// handle:   handle trả về từ openDevice()
-// boot:     struct BootSector đã parse
-// fatTable: bảng FAT đã nạp vào bộ nhớ
 // result:   vector sẽ chứa thông tin các file .txt tìm được
 // ------------------------------------------------------------
 void listAllTxtFiles(DeviceHandle handle,
@@ -28,12 +25,6 @@ void listAllTxtFiles(DeviceHandle handle,
 // ------------------------------------------------------------
 // Duyệt đệ quy một thư mục và tất cả thư mục con của nó
 //
-// handle:       handle thiết bị
-// boot:         Boot Sector
-// fatTable:     bảng FAT
-// startCluster: cluster đầu tiên của thư mục cần duyệt
-// currentPath:  đường dẫn hiện tại (để điền vào DirEntry.fullPath)
-//               ví dụ: "/", "/DOCS/", "/DOCS/SCHOOL/"
 // result:       danh sách file .txt tìm được (thêm vào, không ghi đè)
 // ------------------------------------------------------------
 void scanDirectory(DeviceHandle handle,
@@ -47,8 +38,6 @@ void scanDirectory(DeviceHandle handle,
 // ------------------------------------------------------------
 // Đọc tất cả entry trong một cluster thư mục vào buffer
 //
-// handle:        handle thiết bị
-// boot:          Boot Sector
 // clusterNum:    cluster cần đọc
 // entriesOut:    vector nhận các entry raw (mỗi entry là mảng 32 byte)
 //
@@ -67,7 +56,7 @@ bool readDirectoryCluster(DeviceHandle handle,
 // currentPath: đường dẫn thư mục chứa entry này
 // out:         struct DirEntry sẽ được điền dữ liệu
 //
-// Trả về: true nếu entry hợp lệ (không phải entry trống hoặc đã xóa)
+// Trả về: true nếu entry hop le (ko phai la 0 hoac bi xoa)
 // ------------------------------------------------------------
 bool parseDirectoryEntry(const uint8_t* rawEntry,
                          const std::string& currentPath,
@@ -86,10 +75,10 @@ bool isTxtFile(const DirEntry& entry);
 
 
 // ------------------------------------------------------------
-// Kiểm tra một entry có phải là thư mục con (không phải . hoặc ..) không
+// Kiểm tra một entry có phải là thư mục con
 //
 // entry: struct DirEntry đã parse
 //
-// Trả về: true nếu là thư mục và tên không phải "." hoặc ".."
+// Trả về: true neu la thu muc
 // ------------------------------------------------------------
 bool isSubDirectory(const DirEntry& entry);

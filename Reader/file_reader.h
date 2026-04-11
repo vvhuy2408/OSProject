@@ -13,9 +13,6 @@
 // ------------------------------------------------------------
 // Đọc toàn bộ nội dung file vào chuỗi text
 //
-// handle:       handle thiết bị
-// boot:         Boot Sector
-// fatTable:     bảng FAT đã nạp
 // firstCluster: cluster đầu tiên của file (lấy từ DirEntry.firstCluster)
 // fileSize:     kích thước thật của file tính bằng byte (lấy từ DirEntry.fileSize)
 // contentOut:   chuỗi sẽ chứa nội dung file sau khi đọc
@@ -36,8 +33,6 @@ bool readFileContent(DeviceHandle handle,
 // entry:   DirEntry đã parse từ directory.cpp
 // out:     struct FileInfo sẽ được điền dữ liệu
 //
-// Hàm này decode ngày giờ từ dạng packed bit FAT32 sang ngày giờ thông thường.
-// Công thức decode:
 //   year   = ((date >> 9) & 0x7F) + 1980
 //   month  = (date >> 5) & 0x0F
 //   day    =  date & 0x1F
